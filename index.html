@@ -36,6 +36,7 @@
                             <option value="jus">Jus</option>
                             <option value="yaourt">Yaourt</option>
                             <option value="viande">Viande fraîche</option>
+                            <option value="viande_hachee">Viande hachée</option>
                             <option value="poisson">Poisson frais</option>
                             <option value="fromage">Fromage à pâte molle</option>
                             <option value="conserve">Conserve</option>
@@ -120,6 +121,11 @@
                 <div class="explanation-box">
                     <h3>Explication Scientifique</h3>
                     <p id="res-explication">En attente de calculs...</p>
+                </div>
+
+                <div class="chart-container glass-effect" style="margin-top: 2rem; padding: 1.5rem; border-radius: 12px; height: 400px; position: relative;">
+                    <h3 style="color: #818cf8; margin-bottom: 1rem; font-size: 1.1rem;">Évolution Bactérienne (Log CFU/g)</h3>
+                    <canvas id="growthChart"></canvas>
                 </div>
 
                 <div class="methodology-box"

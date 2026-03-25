@@ -54,84 +54,306 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- LOGIQUE DE CALCUL SCIENTIFIQUE (PORTÉE DU BACKEND) ---
     const PRODUCTS_DATA = {
-        'lait_pasteurise': { N0: 100, mu_table: { 4.0: 1.35, 15.0: 4.08 }, frozen_days: 90, source_mu: "ComBase: Pseudomonas fluorescens", source_frozen: "USDA FoodKeeper: 1-3 mois" },
-        'lait_uht': { N0: 100, mu_table: { 4.0: 1.0 }, frozen_days: 90, source_mu: "ComBase: Contaminants psychrotrophes", source_frozen: "Standards industriels" },
-        'yaourt': { N0: 100, mu_table: { 4.0: 0.3 }, frozen_days: 60, source_mu: "ComBase: Altération fongique", source_frozen: "USDA: 1-2 mois" },
-        'fromage': { N0: 100, mu_table: { 8.0: 2.0 }, frozen_days: 180, source_mu: "ComBase: Listeria monocytogenes", source_frozen: "FDA/USDA: Jusqu'à 6 mois" },
-        'viande': { N0: 100, mu_table: { 4.0: 1.2, 10.0: 3.0 }, frozen_days: 180, source_mu: "ComBase: Pseudomonas spp.", source_frozen: "FDA/USDA: ~6 mois" },
-        'poisson': { N0: 100, mu_table: { 4.0: 1.8, 8.0: 3.5 }, frozen_days: 120, source_mu: "ComBase: Psychrotrophes marins", source_frozen: "USDA: ~4 mois" },
-        'jus': { N0: 100, mu_table: { 4.0: 0.2, 10.0: 1.5 }, frozen_days: 365, source_mu: "ComBase: Levures", source_frozen: "USDA: 8-12 mois" },
-        'conserve': { N0: 10, mu_table: { 20.0: 0.010 }, frozen_days: 365, source_mu: "ComBase: Clostridium sporogenes", source_frozen: "Standards: possible 1 an" },
-        'autre': { N0: 100, mu_table: { 4.0: 1.0 }, frozen_days: 90, source_mu: "ComBase: Microflore totale", source_frozen: "Estimation prudente FDA" }
+        'lait_pasteurise': { 
+            micro: 'Pseudomonas spp. (psychrotrophes)',
+            mu_opt: 11.0, b: 0.087, Tmin: -9, Tmax: 45, 
+            pH_min: 4.5, pH_opt: 6.7, pH_max: 9.0, 
+            aw_min: 0.94, aw_opt: 0.99, 
+            N0: 1e3, Nlim: 1e7,
+            source: "[17] ComBase / Pseudomonas fits"
+        },
+        'lait_uht': { 
+            micro: 'Bacillus spp. / Pseudomonas (post-ouverture)',
+            mu_opt: 11.0, b: 0.087, Tmin: -9, Tmax: 45, 
+            pH_min: 4.5, pH_opt: 6.7, pH_max: 9.0, 
+            aw_min: 0.94, aw_opt: 0.99, 
+            N0: 1e3, Nlim: 1e7,
+            source: "Stérilité commerciale; paramètres Pseudomonas si ouvert"
+        },
+        'yaourt': { 
+            micro: 'Lactobacillus bulgaricus & Streptococcus thermophilus',
+            mu_opt: 3.0, b: 0.04, Tmin: 0, Tmax: 45, 
+            pH_min: 3.5, pH_opt: 5.0, pH_max: 6.5, 
+            aw_min: 0.97, aw_opt: 0.99, 
+            N0: 1e7, Nlim: 1e9,
+            source: "Microbiologie du yaourt [23]"
+        },
+        'fromage': { 
+            micro: 'Flore lactique & levures de surface',
+            mu_opt: 2.0, b: 0.035, Tmin: 2, Tmax: 40, 
+            pH_min: 4.0, pH_opt: 5.5, pH_max: 7.0, 
+            aw_min: 0.90, aw_opt: 0.97, 
+            N0: 1e5, Nlim: 1e9,
+            source: "Review fromages à pâte molle"
+        },
+        'viande': { 
+            micro: 'Pseudomonas spp. & Bactéries Lactiques',
+            mu_opt: 6.0, b: 0.08, Tmin: -5, Tmax: 40, 
+            pH_min: 4.5, pH_opt: 6.5, pH_max: 8.0, 
+            aw_min: 0.97, aw_opt: 0.99, 
+            N0: 1e3, Nlim: 1e7,
+            source: "Frontiers 2020 Meat Microbiota"
+        },
+        'viande_hachee': { 
+            micro: 'Pseudomonas, Enterobacteriaceae, LAB',
+            mu_opt: 10.0, b: 0.1, Tmin: -2, Tmax: 40, 
+            pH_min: 4.5, pH_opt: 6.5, pH_max: 8.5, 
+            aw_min: 0.96, aw_opt: 0.99, 
+            N0: 1e4, Nlim: 1e7,
+            source: "Estimation forte charge microbienne"
+        },
+        'poisson': { 
+            micro: 'Shewanella putrefaciens & Pseudomonas',
+            mu_opt: 10.0, b: 0.12, Tmin: -2, Tmax: 35, 
+            pH_min: 5.0, pH_opt: 6.5, pH_max: 8.0, 
+            aw_min: 0.96, aw_opt: 0.99, 
+            N0: 1e3, Nlim: 1e7,
+            source: "Tuna spoilage study [28]"
+        },
+        'jus': { 
+            micro: 'Levures acidophiles / Alicyclobacillus',
+            mu_opt: 4.0, b: 0.05, Tmin: 0, Tmax: 40, 
+            pH_min: 2.5, pH_opt: 4.0, pH_max: 6.0, 
+            aw_min: 0.90, aw_opt: 0.98, 
+            N0: 100, Nlim: 1e6,
+            source: "USDA / Standards boissons acides"
+        },
+        'conserve': { 
+            micro: 'Clostridium sporogenes (survivants)',
+            mu_opt: 2.0, b: 0.02, Tmin: 10, Tmax: 55, 
+            pH_min: 4.5, pH_opt: 7.0, pH_max: 8.5, 
+            aw_min: 0.93, aw_opt: 0.99, 
+            N0: 1, Nlim: 1e6,
+            source: "Appertisation standards"
+        },
+        'autre': { 
+            micro: 'Microflore totale',
+            mu_opt: 4.0, b: 0.05, Tmin: 0, Tmax: 45, 
+            pH_min: 4.0, pH_opt: 7.0, pH_max: 9.0, 
+            aw_min: 0.92, aw_opt: 0.99, 
+            N0: 1e2, Nlim: 1e7,
+            source: "Valeurs par défaut prudentes"
+        }
     };
     const N_LIMITE = 10000000;
 
-    function interpolateMu(temp, mu_table) {
-        const temps = Object.keys(mu_table).map(Number).sort((a, b) => a - b);
-        if (temp <= temps[0]) return mu_table[temps[0]];
-        if (temp >= temps[temps.length - 1]) return mu_table[temps[temps.length - 1]];
+    function calculateMuRatkowsky(temp, params) {
+        if (temp <= params.Tmin) return 0;
+        if (temp >= params.Tmax) return 0; // Zone létale ou inhibition
+        // μ = (b * (T - Tmin))^2
+        const mu = Math.pow(params.b * (temp - params.Tmin), 2);
+        return mu;
+    }
 
-        for (let i = 0; i < temps.length - 1; i++) {
-            const t1 = temps[i], t2 = temps[i + 1];
-            if (temp >= t1 && temp <= t2) {
-                const mu1 = mu_table[t1], mu2 = mu_table[t2];
-                return mu1 + (temp - t1) * (mu2 - mu1) / (t2 - t1);
-            }
+    function getGammaPH(ph, params) {
+        if (ph < params.pH_min || ph > params.pH_max) return 0;
+        // Modèle Cardinal simplifié (Rosso)
+        const numerator = (ph - params.pH_min) * (ph - params.pH_max);
+        const denominator = (params.pH_opt - params.pH_min) * (params.pH_opt - params.pH_max);
+        const gamma = numerator / (denominator || 1);
+        return Math.max(0, Math.min(1, gamma));
+    }
+
+    function getGammaAW(aw, params) {
+        if (aw < params.aw_min) return 0;
+        // Modèle linéaire d'ajustement aw
+        const gamma = (aw - params.aw_min) / (params.aw_opt - params.aw_min);
+        return Math.max(0, Math.min(1, gamma));
+    }
+
+    let growthChart = null;
+    function renderGrowthChart(params, mu_final, finalDays) {
+        const canvas = document.getElementById('growthChart');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (growthChart) growthChart.destroy();
+
+        const labels = [];
+        const dataPoints = [];
+        // On affiche jusqu'à 150% de la durée de vie ou 7 jours min
+        const maxDays = Math.max(finalDays * 1.5, 7);
+        const steps = 40;
+        const limitLog = Math.log10(params.Nlim);
+
+        for (let i = 0; i <= steps; i++) {
+            const t = (maxDays / steps) * i;
+            // N(t) = N0 * exp(mu * t)
+            const N = params.N0 * Math.exp(mu_final * t);
+            const logN = Math.log10(N);
+            labels.push(t.toFixed(1));
+            dataPoints.push(logN);
         }
-        return 0.01;
+
+        growthChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Charge Microbienne',
+                    data: dataPoints,
+                    borderWidth: 3,
+                    fill: {
+                        target: 'origin',
+                        above: 'rgba(99, 102, 241, 0.05)',   
+                    },
+                    segment: {
+                        borderColor: ctx => ctx.p1.parsed.y >= limitLog ? '#ef4444' : '#4ade80',
+                    },
+                    tension: 0.4,
+                    pointRadius: 0
+                },
+                {
+                    label: 'Seuil de sécurité',
+                    data: new Array(labels.length).fill(limitLog),
+                    borderColor: 'rgba(239, 68, 68, 0.5)',
+                    borderDash: [5, 5],
+                    borderWidth: 1,
+                    pointRadius: 0,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(context) {
+                                return ` Log CFU: ${context.parsed.y.toFixed(2)}`;
+                            },
+                            title: function(context) {
+                                return `Jour ${context[0].label}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        title: { display: true, text: 'Log CFU/g', color: '#94a3b8' },
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#94a3b8' },
+                        suggestedMax: limitLog + 1
+                    },
+                    x: {
+                        title: { display: true, text: 'Temps (Jours)', color: '#94a3b8' },
+                        grid: { display: false },
+                        ticks: { color: '#94a3b8' }
+                    }
+                }
+            }
+        });
     }
 
     function calculateShelfLifeLocally(data) {
         const productType = data.produit || 'autre';
         const params = PRODUCTS_DATA[productType] || PRODUCTS_DATA['autre'];
         const temp = parseFloat(data.temperature) || 4.0;
+        const ph = parseFloat(data.ph) || 7.0;
+        const rh = parseFloat(data.humidite) || 50.0;
+        const isOpen = data.produit_ouvert === 'oui';
+        
         const prodDate = new Date(data.date_production);
         
         let finalDays = 0;
-        let explanation = "--- ANALYSE SCIENTIFIQUE (FRONTEND) ---\n";
+        let explanation = `--- ANALYSE SCIENTIFIQUE : ${productType.toUpperCase()} ---\n`;
+        explanation += `Microbe cible : ${params.micro}\n\n`;
 
-        if (temp < 0) {
-            finalDays = params.frozen_days;
-            explanation += `ÉTAT : PRODUIT CONGELÉ (${temp}°C)\n`;
-            explanation += `LOGIQUE : Application des standards de stockage à long terme.\n`;
-            explanation += `DURÉE TYPE : ${finalDays} jours.\n`;
-            explanation += `SOURCE : ${params.source_frozen}\n\n`;
-            explanation += "FACTEURS : Température négative bloquant la croissance pathogène.\n";
+        if (temp <= params.Tmin) {
+            finalDays = 999; 
+            explanation += `ÉTAT : Température (T=${temp}°C) inférieure ou égale au minimum de croissance (${params.Tmin}°C).\n`;
+            explanation += `RÉSULTAT : Croissance bactérienne bloquée. Conservation longue.\n`;
+        } else if (temp >= params.Tmax) {
+            finalDays = 0;
+            explanation += `ÉTAT : Température (T=${temp}°C) dans la zone d'inhibition ou létale (>=${params.Tmax}°C).\n`;
+            explanation += `RÉSULTAT : Dégradation thermique rapide ou inhibition totale.\n`;
         } else {
-            const mu = interpolateMu(temp, mu_table = params.mu_table);
-            const t_initial = (Math.log(N_LIMITE) - Math.log(params.N0)) / mu;
+            // 1. Calcul μ_T (Ratkowsky)
+            const mu_T = calculateMuRatkowsky(temp, params);
             
-            explanation += `ÉTAT : RÉFRIGÉRATION / AMBIANT (${temp}°C)\n`;
-            explanation += `μmax : ${mu.toFixed(4)} jour⁻¹ (Source: ${params.source_mu})\n\n`;
-            explanation += `FORMULE : t = (ln(Nlimite) − ln(N0)) / μmax\n`;
-            explanation += `DURÉE INITIALE : ${t_initial.toFixed(1)} jours\n\n`;
+            // 2. Facteur Cardinal pH
+            const gamma_ph = getGammaPH(ph, params);
+            
+            // 3. Facteur Cardinal a_w (Basé sur aw_opt du produit)
+            // On considère que l'aw est égale à l'aw_opt du produit par défaut.
+            const gamma_aw = getGammaAW(params.aw_opt, params); 
 
+            // 4. Calcul μ final
+            const mu_final = mu_T * gamma_ph * gamma_aw;
+
+            // 5. Calcul durée de conservation (Équation fondamentale)
+            // t = (ln(N_lim) - ln(N0)) / mu
+            const t_base = (Math.log(params.Nlim) - Math.log(params.N0)) / (mu_final || 0.0001);
+            
+            explanation += `1) MODÈLE DE RATKOWSKY (Température)\n`;
+            explanation += `   √μ = ${params.b} * (T - (${params.Tmin}))\n`;
+            explanation += `   μ_T = ${mu_T.toFixed(4)} jour⁻¹\n\n`;
+
+            explanation += `2) MODÈLE CARDINAL (pH et Humidité)\n`;
+            explanation += `   γ(pH=${ph}) = ${gamma_ph.toFixed(3)} (Optimum: ${params.pH_opt})\n`;
+            explanation += `   γ(a_w=${params.aw_opt}) = ${gamma_aw.toFixed(3)}\n`;
+            explanation += `   μ_final = μ_T * γ(pH) * γ(a_w) = ${mu_final.toFixed(4)} jour⁻¹\n\n`;
+
+            explanation += `3) DURÉE MICROBIOLOGIQUE THÉORIQUE\n`;
+            explanation += `   t = (ln(${params.Nlim.toExponential()}) - ln(${params.N0.toExponential()})) / ${mu_final.toFixed(4)}\n`;
+            explanation += `   t = ${t_base.toFixed(1)} jours\n\n`;
+
+            // 6. Facteurs de Correction (Statut Ouverture / Chaîne du froid)
             let multiplier = 1.0;
             let adjustments = [];
-            if (data.produit_ouvert === 'oui') { multiplier -= 0.30; adjustments.push("Produit ouvert (-30%)"); }
-            if (data.rupture_froid === 'oui') { multiplier -= 0.40; adjustments.push("Rupture chaîne froid (-40%)"); }
-            if (data.conservateurs === 'oui') { multiplier += 0.10; adjustments.push("Conservateurs (+10%)"); }
-
-            finalDays = Math.max(0, Math.round(t_initial * multiplier));
-
-            if (adjustments.length > 0) {
-                explanation += "FACTEURS CORRECTIFS :\n" + adjustments.map(a => `• ${a}`).join('\n') + "\n";
-                explanation += `DURÉE FINALE : ${finalDays} jours.\n`;
-            } else {
-                explanation += "FACTEURS : Conditions optimales de stockage.\n";
+            
+            // Si le produit est ouvert, on réduit la durée de conservation (contamination post-ouverture)
+            if (isOpen) { 
+                multiplier *= 0.6; // Réduction de 40% (Facteur ~0.6-0.7 suggéré par la littérature)
+                adjustments.push("Produit ouvert (Contamination post-ouverture : x0.6)"); 
             }
+            if (data.rupture_froid === 'oui') { 
+                multiplier *= 0.5; 
+                adjustments.push("Rupture chaîne froid (Accélération enzymatique : x0.5)"); 
+            }
+            if (data.conservateurs === 'oui') { 
+                multiplier *= 1.2; 
+                adjustments.push("Présence de conservateurs (Inhibition microbienne : x1.2)"); 
+            }
+
+            finalDays = Math.max(0, Math.round(t_base * multiplier));
+
+            explanation += `4) FACTEURS D'AJUSTEMENT INDUSTRIELS\n`;
+            if (adjustments.length > 0) {
+                explanation += adjustments.map(a => `   • ${a}`).join('\n') + "\n";
+                explanation += `   Coefficient total : x${multiplier.toFixed(2)}\n`;
+            } else {
+                explanation += `   • Conditions optimales (scellé, froid continu)\n`;
+            }
+            explanation += `   DURÉE FINALE ESTIMÉE : ${finalDays} jours\n`;
+            
+            explanation += `\nSOURCE SCIENTIFIQUE : ${params.source}\n`;
         }
 
         const estimatedDate = new Date(prodDate);
         estimatedDate.setDate(estimatedDate.getDate() + finalDays);
-        const risk = finalDays > 5 ? "Vert" : (finalDays > 2 ? "Orange" : "Rouge");
+        
+        // Risque basé sur la durée restante par rapport à des seuils standards
+        let risk = "Vert";
+        if (finalDays <= 2) risk = "Rouge";
+        else if (finalDays <= 5) risk = "Orange";
 
-        return {
+        const result = {
             duree_restante_jours: finalDays,
             nouvelle_date_estimee: estimatedDate.toISOString().split('T')[0],
             niveau_risque: risk,
-            explication_scientifique: explanation
+            explication_scientifique: explanation,
+            // Données pour le graphe
+            graph_data: {
+                params: params,
+                mu_final: calculateMuRatkowsky(temp, params) * getGammaPH(ph, params) * getGammaAW(params.aw_opt, params),
+                finalDays: finalDays
+            }
         };
+
+        return result;
     }
 
     function displayResults(data) {
@@ -151,7 +373,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         uiExplication.innerText = data.explication_scientifique;
 
-
+        // Render Graph
+        if (data.graph_data) {
+            renderGrowthChart(data.graph_data.params, data.graph_data.mu_final, data.graph_data.finalDays);
+        }
     }
 
 
@@ -168,9 +393,10 @@ document.addEventListener('DOMContentLoaded', () => {
             'lait_pasteurise': { ph: 6.7 },
             'jus': { ph: 3.5 },
             'yaourt': { ph: 4.5 },
-            'viande': { ph: 6.8 },
-            'poisson': { ph: 6.7 },
-            'fromage': { ph: 6.5 },
+            'viande': { ph: 6.2 },
+            'viande_hachee': { ph: 6.0 },
+            'poisson': { ph: 6.2 },
+            'fromage': { ph: 5.5 },
             'conserve': { ph: 6.0 },
             'autre': { ph: 7.0 }
         };
@@ -227,15 +453,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const location = geoData.results[0];
             const { latitude, longitude, name } = location;
             
-            // 2. Météo
-            const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=relative_humidity_2m`;
+            // 2. Météo - Fix Humidity Fetch
+            const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=relative_humidity_2m&timezone=auto`;
             const weatherResp = await fetch(weatherUrl);
+            if (!weatherResp.ok) throw new Error("Erreur de récupération météo.");
+            
             const weatherData = await weatherResp.json();
             
+            if (!weatherData.current || weatherData.current.relative_humidity_2m === undefined) {
+                throw new Error("Données d'humidité non disponibles pour cette ville.");
+            }
+
             const humidite = weatherData.current.relative_humidity_2m;
 
             // Populate field
-            if (humidite !== undefined) humInput.value = humidite;
+            humInput.value = humidite;
 
             // Show success
             meteoMsg.textContent = `Humidité récupérée pour ${name} : ${humidite}%.`;
