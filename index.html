@@ -1,161 +1,222 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YASSINE BOUMESHOULE</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FreshIndex PRO | Modélisation Prédictive & Cinétiques Agroalimentaires</title>
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+  
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-    <div class="app-container">
-        <!-- Sidebar / Header -->
-        <header class="header">
-            <div class="logo">
-                <span class="icon">🔬</span>
-                <h1>YASSINE BOUMESHOULE</h1>
+
+  <!-- Curseur interactif personnalisé lumineux -->
+  <div class="custom-cursor-glow" id="cursor-glow"></div>
+  <div class="custom-cursor-dot" id="cursor-dot"></div>
+
+
+
+  <div class="grid-overlay" id="grid-overlay"></div>
+
+  <!-- Mise en page Dashboard Spatial / Parallaxe -->
+  <main class="app-layout" id="parallax-container">
+    
+    <!-- EN-TÊTE ACADÉMIQUE / ENSA BM -->
+    <header class="header parallax-element" data-speed="2">
+      <div class="header-badge-wrapper">
+        <span class="badge-line"></span>
+        <span class="header-badge">MODÉLISATION DE LA DURÉE DE CONSERVATION (ASLT / Q10)</span>
+      </div>
+      <div class="header-content">
+        <h1 class="author-title">
+          <span class="first-name">Yassine</span>
+          <span class="last-name">Boumeshoule</span>
+        </h1>
+        <div class="academic-sub">
+          <span class="academic-role">Élève Ingénieur en Cycle d'Ingénieur</span>
+          <span class="academic-sep">/</span>
+          <span class="academic-school">École Nationale des Sciences Appliquées de Béni Mellal (ENSA BM)</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ÉTAPE 1 : SÉLECTEUR DE PRODUIT EN CARTES FLOTTANTES -->
+    <section class="section section-gallery parallax-element" data-speed="1.5">
+      <div class="section-header">
+        <span class="section-num">01 /</span>
+        <h2 class="section-title">Sélection de la Matrice Alimentaire</h2>
+      </div>
+      <div class="gallery-wrapper">
+        <div class="product-carousel" id="product-gallery">
+          <!-- Injecté par app.js -->
+        </div>
+      </div>
+      <input type="hidden" id="produit" name="produit" required>
+    </section>
+
+    <!-- ÉTAPE 2 : PARAMÈTRES BIOCHIMIQUES ET ENVIRONNEMENTAUX -->
+    <section class="section section-form parallax-element" data-speed="1.2">
+      <div class="section-header">
+        <span class="section-num">02 /</span>
+        <h2 class="section-title">Paramètres Physico-Chimiques & Inhibiteurs</h2>
+      </div>
+      <form id="analysis-form" class="form-grid">
+        
+        <div class="form-row">
+          <div class="input-line">
+            <label for="date_production">Date d'origine (fabrication/conditionnement)</label>
+            <input type="date" id="date_production" required>
+          </div>
+          
+          <div class="input-line">
+            <label for="temperature">Température d'exposition (°C)</label>
+            <input type="number" id="temperature" step="0.5" value="4" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="input-line">
+            <label for="humidite">Humidité relative de l'air ambiant (%)</label>
+            <input type="number" id="humidite" value="75" required>
+          </div>
+          
+          <div class="input-line">
+            <label for="ph">Potentiel Hydrogène interne de la matrice (pH)</label>
+            <input type="number" id="ph" step="0.1" value="6.7">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="input-line">
+            <label for="aw">Activité de l'eau libre de la matrice (aw)</label>
+            <input type="number" id="aw" step="0.005" value="0.990">
+          </div>
+        </div>
+
+        <div class="conditions-block">
+          <span class="block-label">Modulateurs Thermocinétiques & d'Altération</span>
+          <div class="checkbox-container">
+            <label class="cb-wrap">
+              <input type="checkbox" id="produit_ouvert">
+              <span class="cb-custom"></span>
+              <span class="cb-text">Emballage ouvert (exposition à l'oxygène active)</span>
+            </label>
+            
+            <label class="cb-wrap">
+              <input type="checkbox" id="rupture_froid">
+              <span class="cb-custom"></span>
+              <span class="cb-text">Rupture de la chaîne du froid (choc thermique)</span>
+            </label>
+            
+            <label class="cb-wrap">
+              <input type="checkbox" id="conservateurs">
+              <span class="cb-custom"></span>
+              <span class="cb-text">Présence d'agents conservateurs (inhibiteurs biochimiques)</span>
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-calculate">
+          <span class="btn-glow"></span>
+          <span class="btn-text">Générer la prédiction cinétique</span>
+          <span class="btn-arrow">⚡</span>
+        </button>
+      </form>
+    </section>
+
+    <!-- ÉTAPE 3 : RÉSULTATS DANS L'ORDRE STRICT EXIGÉ -->
+    <section class="section section-results hidden" id="results-panel">
+      
+      <!-- 3.1 NOM DU PRODUIT ET RÉSULTAT PRINCIPAL -->
+      <div class="result-card main-result-card parallax-element" data-speed="1.8" id="main-result-card">
+        <div class="card-glow-bg"></div>
+        <div class="result-meta">
+          <span class="result-product-name" id="res-product-title">Nom du produit</span>
+          <span class="result-status-tag">MODÈLE CINÉTIQUE VALIDÉ</span>
+        </div>
+        
+        <div class="result-main-flex">
+          <div class="result-value-box">
+            <span class="hero-label">DURÉE DE CONSERVATION RÉSIDUELLE ESTIMÉE</span>
+            <div class="hero-value" id="res-jours">--</div>
+            <div class="hero-date-box">
+              <span class="date-label">Date limite de consommation estimée :</span>
+              <span class="hero-date" id="res-date">--</span>
             </div>
-            <p class="subtitle">Système Intelligent de Prédiction de la Durée de Conservation</p>
-        </header>
+          </div>
+          
+          <div class="result-status-visual" id="res-status-visual">
+            <div class="pulse-ring"></div>
+            <div class="status-light-core"></div>
+            <span class="status-visual-text" id="res-status-visual-text">Sûr</span>
+          </div>
+        </div>
+      </div>
 
-        <main class="main-content">
-            <!-- Form Section -->
-            <section class="form-section panel glass-effect">
-                <h2>Paramètres du Produit</h2>
-                <form id="prediction-form">
+      <!-- 3.2 EFFET DES FACTEURS AVEC EXPLICATIONS DÉTAILLÉES -->
+      <div class="result-card factors-card parallax-element" data-speed="1.4">
+        <div class="tech-card-header">
+          <span class="tech-index">[ 03.2 ]</span>
+          <h3>Analyse de l'influence physiologique des facteurs</h3>
+        </div>
+        <div class="factors-grid" id="factors-list">
+          <!-- Injecté dynamiquement par app.js avec explications et sources -->
+        </div>
+      </div>
 
-                    <div class="form-group">
-                        <label for="produit">Sélection du Produit</label>
-                        <select id="produit" name="produit" required>
-                            <option value="">Sélectionnez un produit...</option>
-                            <option value="lait_uht">Lait UHT (brique/carton)</option>
-                            <option value="lait_pasteurise">Lait pasteurisé (sachet plastique)</option>
-                            <option value="jus">Jus</option>
-                            <option value="yaourt">Yaourt</option>
-                            <option value="viande">Viande fraîche</option>
-                            <option value="viande_hachee">Viande hachée</option>
-                            <option value="poisson">Poisson frais</option>
-                            <option value="fromage">Fromage à pâte molle</option>
-                            <option value="conserve">Conserve</option>
-                            <option value="autre">Autre</option>
-                        </select>
-                    </div>
+      <!-- 3.3 DÉCOMPOSITION MATHÉMATIQUE ET SOURCES PAR VALEUR -->
+      <div class="result-card math-card parallax-element" data-speed="1.1">
+        <div class="tech-card-header">
+          <span class="tech-index">[ 03.3 ]</span>
+          <h3>Décomposition analytique des calculs de cinétique (ASLT/Q10)</h3>
+        </div>
+        <div class="calc-steps" id="calc-steps">
+          <!-- Injecté dynamiquement par app.js avec décomposition complète et sources -->
+        </div>
+      </div>
 
-                    <div class="form-group">
-                        <label for="date_production">Date de production</label>
-                        <input type="date" id="date_production" name="date_production" required>
-                    </div>
+      <!-- 3.4 GRAPHIQUE D'ALTÉRATION -->
+      <div class="result-card chart-card parallax-element" data-speed="0.8">
+        <div class="tech-card-header">
+          <span class="tech-index">[ 03.4 ]</span>
+          <h3>Cinétique d'évolution de la fraîcheur résiduelle (%)</h3>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="freshnessChart"></canvas>
+        </div>
+      </div>
 
-                    <div class="form-group">
-                        <label for="ville">Ville (Données Météo)</label>
-                        <div style="display: flex; gap: 10px; align-items: stretch;">
-                            <input type="text" id="ville" name="ville" placeholder="Ex: Casablanca" style="flex: 1;">
-                            <button type="button" id="btn-meteo"
-                                style="padding: 0 1rem; background-color: rgba(79, 70, 229, 0.1); color: #818cf8; border: 1px solid rgba(79, 70, 229, 0.3); border-radius: 6px; cursor: pointer; transition: all 0.2s;">
-                                <span class="btn-text">Récupérer Météo</span>
-                                <div class="spinner meteo-spinner hidden"
-                                    style="display: none; width: 1.2rem; height: 1.2rem; border-width: 2px;"></div>
-                            </button>
-                        </div>
-                        <small id="meteo-msg" style="display: block; margin-top: 5px; color: #f87171;"></small>
-                    </div>
+    </section>
 
-                    <div class="grid-2-col">
-                        <div class="form-group">
-                            <label for="temperature">Température de stockage (°C)</label>
-                            <input type="number" id="temperature" name="temperature" step="0.1" value="4.0" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="humidite">Humidité (%)</label>
-                            <input type="number" id="humidite" name="humidite" min="0" max="100"
-                                placeholder="Saisir ou via Ville">
-                        </div>
-                    </div>
+    <!-- PIED DE PAGE SCIENTIFIQUE -->
+    <footer class="footer parallax-element" data-speed="0.5">
+      <div class="footer-line"></div>
+      <div class="footer-grid">
+        <div class="footer-branding">
+          <h4>École Nationale des Sciences Appliquées de Béni Mellal (ENSA BM)</h4>
+          <p>Département Génie Agroalimentaire / Procédés. Projet académique d'analyse et de modélisation prédictive.</p>
+        </div>
+        <div class="footer-sources">
+          <h4>Bases de Données & Standards Scientifiques Exploités</h4>
+          <p>
+            • ASTM E1960 (Stabilité Accélérée)<br>
+            • ComBase DB (Microbiologie Prédictive)<br>
+            • FDA Food Code Guidelines (Facteurs pH & aw)<br>
+            • USDA-FSIS Pathogen Modeling Database<br>
+            • Travaux de Labuza & Schmidl (Modèles cinétiques Q10)
+          </p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 FreshIndex PRO. Développé de manière créative par Yassine Boumeshoule, élève ingénieur à l'ENSA BM.</p>
+      </div>
+    </footer>
 
-                    <div class="grid-2-col">
-                        <div class="form-group" style="grid-column: span 2;">
-                            <label for="ph">pH</label>
-                            <input type="number" id="ph" name="ph" step="0.1" min="0" max="14" value="7.0">
-                        </div>
-                    </div>
+  </main>
 
-                    <fieldset class="checkbox-group">
-                        <legend>Conditions Spécifiques</legend>
-                        <label><input type="checkbox" name="produit_ouvert" value="oui"> Produit ouvert</label>
-                        <label><input type="checkbox" name="rupture_froid" value="oui"> Rupture de chaîne du
-                            froid</label>
-                        <label><input type="checkbox" name="conservateurs" value="oui"> Présence de
-                            conservateurs</label>
-                    </fieldset>
-
-                    <button type="submit" class="btn-primary" id="submit-btn">
-                        <span class="btn-text">Lancer l'Analyse ML</span>
-                        <div class="spinner hidden"></div>
-                    </button>
-                </form>
-            </section>
-
-            <!-- Results Section -->
-            <section class="results-section panel hidden" id="results-panel">
-                <h2>Résultats de l'Analyse</h2>
-
-                <div class="kpi-grid">
-                    <div class="kpi-card">
-                        <span class="kpi-label">Durée Restante</span>
-                        <div class="kpi-value" id="res-duree">--</div>
-                    </div>
-                    <div class="kpi-card">
-                        <span class="kpi-label">Nouvelle Date Estimée</span>
-                        <div class="kpi-value" id="res-date">--</div>
-                    </div>
-                    <div class="kpi-card" id="risk-card">
-                        <span class="kpi-label">Niveau de Sécurité</span>
-                        <div class="kpi-value risk-badge" id="res-risk">--</div>
-                    </div>
-
-                </div>
-
-                <div class="explanation-box">
-                    <h3>Explication Scientifique</h3>
-                    <p id="res-explication">En attente de calculs...</p>
-                </div>
-
-                <div class="chart-container glass-effect" style="margin-top: 2rem; padding: 1.5rem; border-radius: 12px; height: 400px; position: relative;">
-                    <h3 style="color: #818cf8; margin-bottom: 1rem; font-size: 1.1rem;">Évolution Bactérienne (Log CFU/g)</h3>
-                    <canvas id="growthChart"></canvas>
-                </div>
-
-                <div class="methodology-box"
-                    style="margin-top: 2rem; background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 8px; padding: 1.5rem;">
-                    <h3 style="color: #6366f1; margin-bottom: 1rem; font-size: 1.1rem;">Sources et Méthodologie</h3>
-                    <ul
-                        style="color: #94a3b8; line-height: 1.6; padding-left: 1.5rem; margin-bottom: 1rem; font-size: 0.95rem;">
-                        <li><strong>Modèles scientifiques :</strong> Modèle d'Arrhenius, facteurs Q10, et modèles
-                            microbiologiques d'ajustement.</li>
-                        <li><strong>Source des données scientifiques :</strong> Calibré avec les références de la base
-                            ComBase.</li>
-                        <li><strong>Source des données climatiques :</strong> Humidité récupérée en temps réel via l'API
-                            Open-Meteo.</li>
-                    </ul>
-                    <p style="color: #818cf8; font-size: 0.85rem; font-style: italic; margin: 0;">
-                        Confidentialité : Aucune donnée personnelle n’est stockée. Les calculs sont effectués uniquement
-                        à partir des paramètres saisis.
-                    </p>
-                </div>
-
-            </section>
-        </main>
-        <footer
-            style="text-align: center; padding: 20px 0; color: #94a3b8; font-size: 0.9em; margin-top: 2rem; line-height: 1.6;">
-            Développé par <strong>BOUMESHOULE YASSINE</strong><br>
-            <span style="font-size: 0.85em; font-style: italic; color: #e2e8f0;">Étudiant en industrie agroalimentaire à
-                l’ENSA Béni Mellal</span>
-        </footer>
-    </div>
-    <script src="app.js"></script>
+  <script src="app.js"></script>
 </body>
-
 </html>
