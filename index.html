@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" id="html-root">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FreshIndex PRO | Modélisation Prédictive & Cinétiques Agroalimentaires</title>
+  <title>FreshIndex PRO | Predictive Modeling</title>
   
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -13,209 +13,312 @@
 </head>
 <body>
 
-  <!-- Curseur interactif personnalisé lumineux -->
-  <div class="custom-cursor-glow" id="cursor-glow"></div>
-  <div class="custom-cursor-dot" id="cursor-dot"></div>
+  <!-- Dynamic Background Icons Container -->
+  <div id="bg-icons-container" class="bg-icons-container"></div>
 
+  <!-- Background Texture -->
+  <div class="lab-background"></div>
+  <div class="grid-overlay"></div>
 
+  <!-- Language Toggle -->
+  <div class="lang-toggle-container">
+    <div class="lang-dropdown">
+      <button id="lang-btn" class="lang-btn">
+        <span id="current-lang-icon">🇫🇷</span>
+        <span id="current-lang-text">Français</span>
+        <span class="dropdown-arrow">▼</span>
+      </button>
+      <div class="lang-menu hidden" id="lang-menu">
+        <button class="lang-option" data-lang="fr">🇫🇷 Français</button>
+        <button class="lang-option" data-lang="ar">🇸🇦 العربية</button>
+        <button class="lang-option" data-lang="ma">🇲🇦 الدارجة</button>
+      </div>
+    </div>
+  </div>
 
-  <div class="grid-overlay" id="grid-overlay"></div>
-
-  <!-- Mise en page Dashboard Spatial / Parallaxe -->
   <main class="app-layout" id="parallax-container">
     
-    <!-- EN-TÊTE ACADÉMIQUE / ENSA BM -->
-    <header class="header parallax-element" data-speed="2">
+    <!-- HEADER -->
+    <header class="header">
       <div class="header-badge-wrapper">
         <span class="badge-line"></span>
-        <span class="header-badge">MODÉLISATION DE LA DURÉE DE CONSERVATION (ASLT / Q10)</span>
+        <span class="header-badge" id="t-header-badge">MODÉLISATION DE LA DURÉE DE CONSERVATION (ASLT / ARRHENIUS)</span>
       </div>
       <div class="header-content">
         <h1 class="author-title">
-          <span class="first-name">Yassine</span>
-          <span class="last-name">Boumeshoule</span>
+          <span class="first-name" id="t-first-name">Yassine</span>
+          <span class="last-name" id="t-last-name">Boumeshoule</span>
         </h1>
         <div class="academic-sub">
-          <span class="academic-role">Élève Ingénieur en Cycle d'Ingénieur</span>
+          <span class="academic-role" id="t-academic-role">Élève Ingénieur en Cycle d'Ingénieur</span>
           <span class="academic-sep">/</span>
-          <span class="academic-school">École Nationale des Sciences Appliquées de Béni Mellal (ENSA BM)</span>
+          <span class="academic-school" id="t-academic-school">École Nationale des Sciences Appliquées de Béni Mellal (ENSA BM)</span>
         </div>
       </div>
     </header>
 
-    <!-- ÉTAPE 1 : SÉLECTEUR DE PRODUIT EN CARTES FLOTTANTES -->
-    <section class="section section-gallery parallax-element" data-speed="1.5">
+    <!-- STEP 1: PRODUCT SELECTION -->
+    <section class="section section-gallery">
       <div class="section-header">
         <span class="section-num">01 /</span>
-        <h2 class="section-title">Sélection de la Matrice Alimentaire</h2>
+        <h2 class="section-title" id="t-step1-title">Sélection de la Matrice Alimentaire</h2>
       </div>
       <div class="gallery-wrapper">
         <div class="product-carousel" id="product-gallery">
-          <!-- Injecté par app.js -->
+          <!-- Injected by app.js -->
         </div>
       </div>
-      <input type="hidden" id="produit" name="produit" required>
+      <input type="hidden" id="produit" name="produit">
     </section>
 
-    <!-- ÉTAPE 2 : PARAMÈTRES BIOCHIMIQUES ET ENVIRONNEMENTAUX -->
-    <section class="section section-form parallax-element" data-speed="1.2">
+    <!-- STEP 2: FORM -->
+    <section class="section section-form">
       <div class="section-header">
         <span class="section-num">02 /</span>
-        <h2 class="section-title">Paramètres Physico-Chimiques & Inhibiteurs</h2>
+        <h2 class="section-title" id="t-step2-title">Paramètres Physico-Chimiques & Environnementaux</h2>
       </div>
+      
       <form id="analysis-form" class="form-grid">
         
+        <!-- BASIC INPUTS -->
+        <div class="form-section-title" id="t-basic-params">Paramètres de base</div>
+        
         <div class="form-row">
-          <div class="input-line">
-            <label for="date_production">Date d'origine (fabrication/conditionnement)</label>
-            <input type="date" id="date_production" required>
-          </div>
-          
-          <div class="input-line">
-            <label for="temperature">Température d'exposition (°C)</label>
-            <input type="number" id="temperature" step="0.5" value="4" required>
+          <!-- Storage Temp -->
+          <div class="input-group-full temp-input-wrapper">
+            <label id="t-temp-label">Température de stockage (°C)</label>
+            <div class="manual-temp-box">
+              <input type="number" id="temperature" value="4" step="0.1" class="custom-number-input">
+              <span class="temp-unit">°C</span>
+            </div>
           </div>
         </div>
 
         <div class="form-row">
-          <div class="input-line">
-            <label for="humidite">Humidité relative de l'air ambiant (%)</label>
-            <input type="number" id="humidite" value="75" required>
-          </div>
-          
-          <div class="input-line">
-            <label for="ph">Potentiel Hydrogène interne de la matrice (pH)</label>
-            <input type="number" id="ph" step="0.1" value="6.7">
+          <!-- Packaging -->
+          <div class="input-group-full">
+            <label id="t-pack-label">Type d'emballage visible</label>
+            <div class="cards-selector" id="emballage-selector">
+              <div class="select-card active" data-val="non_emballe">
+                <span id="t-pack-open">Non emballé / Perméable</span>
+              </div>
+              <div class="select-card" data-val="sous_vide">
+                <span id="t-pack-vac">Sous vide</span>
+              </div>
+              <div class="select-card" data-val="map">
+                <span id="t-pack-map">Atmosphère Modifiée (MAP)</span>
+              </div>
+            </div>
+            <input type="hidden" id="emballage" value="non_emballe">
           </div>
         </div>
 
         <div class="form-row">
-          <div class="input-line">
-            <label for="aw">Activité de l'eau libre de la matrice (aw)</label>
-            <input type="number" id="aw" step="0.005" value="0.990">
+          <!-- Preservatives -->
+          <div class="input-group-full">
+            <label id="t-preserv-label">Présence de conservateurs</label>
+            <div class="buttons-selector" id="conservateur-selector">
+              <button type="button" class="select-btn" data-val="oui" id="t-preserv-yes">Oui</button>
+              <button type="button" class="select-btn" data-val="non" id="t-preserv-no">Non</button>
+              <button type="button" class="select-btn active" data-val="ne_sais_pas" id="t-preserv-dk">Je ne sais pas</button>
+            </div>
+            <input type="hidden" id="conservateur_select" value="ne_sais_pas">
           </div>
         </div>
 
         <div class="conditions-block">
-          <span class="block-label">Modulateurs Thermocinétiques & d'Altération</span>
+          <span class="block-label" id="t-phys-penalties">Pénalités Physiques</span>
           <div class="checkbox-container">
             <label class="cb-wrap">
               <input type="checkbox" id="produit_ouvert">
               <span class="cb-custom"></span>
-              <span class="cb-text">Emballage ouvert (exposition à l'oxygène active)</span>
+              <span class="cb-text" id="t-cb-open">Produit ouvert</span>
             </label>
-            
             <label class="cb-wrap">
               <input type="checkbox" id="rupture_froid">
               <span class="cb-custom"></span>
-              <span class="cb-text">Rupture de la chaîne du froid (choc thermique)</span>
-            </label>
-            
-            <label class="cb-wrap">
-              <input type="checkbox" id="conservateurs">
-              <span class="cb-custom"></span>
-              <span class="cb-text">Présence d'agents conservateurs (inhibiteurs biochimiques)</span>
+              <span class="cb-text" id="t-cb-cold">Rupture chaîne du froid</span>
             </label>
           </div>
         </div>
 
-        <button type="submit" class="btn-calculate">
-          <span class="btn-glow"></span>
-          <span class="btn-text">Générer la prédiction cinétique</span>
-          <span class="btn-arrow">⚡</span>
+        <!-- ADVANCED SETTINGS TOGGLE -->
+        <button type="button" class="adv-toggle-btn" id="adv-toggle-btn">
+          <span id="t-adv-toggle">Réglages Avancés (Laboratoire)</span>
+          <span class="adv-arrow">▼</span>
         </button>
+
+        <!-- ADVANCED INPUTS -->
+        <div class="advanced-settings hidden" id="advanced-settings">
+          
+          <div class="form-row">
+            <!-- Humidity -->
+            <div class="slider-container">
+              <div class="slider-header">
+                <label id="t-rh-label">Humidité Ambiante (%)</label>
+                <span class="slider-val" id="rh-val-display">75 %</span>
+              </div>
+              <input type="range" id="humidite" min="10" max="100" step="1" value="75" class="custom-slider hum-slider">
+              <div class="input-hint" id="t-rh-hint">L'humidité n'affecte que les produits non scellés.</div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <!-- pH -->
+            <div class="slider-container">
+              <div class="slider-header">
+                <label id="t-ph-label">Potentiel Hydrogène (pH)</label>
+                <span class="slider-val" id="ph-val-display">6.7</span>
+              </div>
+              <input type="range" id="ph" min="1" max="14" step="0.1" value="6.7" class="custom-slider ph-slider">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <!-- aw -->
+            <div class="slider-container">
+              <div class="slider-header">
+                <label id="t-aw-label">Activité de l'eau (aw)</label>
+                <span class="slider-val" id="aw-val-display">0.990</span>
+              </div>
+              <input type="range" id="aw" min="0.5" max="1.0" step="0.005" value="0.990" class="custom-slider aw-slider">
+              <div class="input-hint" id="t-aw-hint">Ajustez directement cette valeur si le produit contient beaucoup de sel/sucre (Norrish).</div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <!-- Light -->
+            <div class="input-group-full">
+              <label id="t-light-label">Exposition à la lumière</label>
+              <div class="buttons-selector" id="lumiere-selector">
+                <button type="button" class="select-btn active" data-val="faible" id="t-light-low">Faible</button>
+                <button type="button" class="select-btn" data-val="forte" id="t-light-high">Forte</button>
+              </div>
+              <input type="hidden" id="lumiere" value="faible">
+            </div>
+          </div>
+
+        </div> <!-- end advanced -->
+
       </form>
     </section>
 
-    <!-- ÉTAPE 3 : RÉSULTATS DANS L'ORDRE STRICT EXIGÉ -->
+    <!-- STEP 3: RESULTS (STRICT ORDER) -->
     <section class="section section-results hidden" id="results-panel">
       
-      <!-- 3.1 NOM DU PRODUIT ET RÉSULTAT PRINCIPAL -->
-      <div class="result-card main-result-card parallax-element" data-speed="1.8" id="main-result-card">
+      <!-- 1. Signature top -->
+      <div class="result-signature" id="t-res-sig">BOUMESHOULE YASSINE</div>
+
+      <!-- 2. Main Result Range -->
+      <div class="result-card main-result-card" id="main-result-card">
         <div class="card-glow-bg"></div>
         <div class="result-meta">
-          <span class="result-product-name" id="res-product-title">Nom du produit</span>
-          <span class="result-status-tag">MODÈLE CINÉTIQUE VALIDÉ</span>
+          <span class="result-product-name" id="res-product-title">Produit</span>
+          <span class="result-status-tag" id="t-res-status-tag">MODÈLE CINÉTIQUE ASLT</span>
         </div>
         
         <div class="result-main-flex">
           <div class="result-value-box">
-            <span class="hero-label">DURÉE DE CONSERVATION RÉSIDUELLE ESTIMÉE</span>
-            <div class="hero-value" id="res-jours">--</div>
-            <div class="hero-date-box">
-              <span class="date-label">Date limite de consommation estimée :</span>
-              <span class="hero-date" id="res-date">--</span>
-            </div>
+            <span class="hero-label" id="t-hero-label">DURÉE DE CONSERVATION ESTIMÉE</span>
+            <div class="hero-range" id="res-range">--</div>
           </div>
           
           <div class="result-status-visual" id="res-status-visual">
-            <div class="pulse-ring"></div>
-            <div class="status-light-core"></div>
-            <span class="status-visual-text" id="res-status-visual-text">Sûr</span>
+            <svg class="progress-ring" width="120" height="120">
+              <circle class="progress-ring__background" stroke="var(--glass-border)" stroke-width="6" fill="transparent" r="50" cx="60" cy="60"/>
+              <circle class="progress-ring__circle" id="progress-ring-circle" stroke="var(--safe)" stroke-width="6" fill="transparent" r="50" cx="60" cy="60"/>
+            </svg>
+            <div class="status-gauge-content">
+              <span class="status-gauge-pct" id="res-status-pct">--%</span>
+              <span class="status-visual-text" id="res-status-visual-text">Indice</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- 3.2 EFFET DES FACTEURS AVEC EXPLICATIONS DÉTAILLÉES -->
-      <div class="result-card factors-card parallax-element" data-speed="1.4">
+      <!-- 3. Factors Short Explanation -->
+      <div class="result-card factors-card">
         <div class="tech-card-header">
-          <span class="tech-index">[ 03.2 ]</span>
-          <h3>Analyse de l'influence physiologique des facteurs</h3>
+          <span class="tech-index">[ 01 ]</span>
+          <h3 id="t-factors-title">Influence Logique des Facteurs</h3>
         </div>
         <div class="factors-grid" id="factors-list">
-          <!-- Injecté dynamiquement par app.js avec explications et sources -->
+          <!-- Injected dynamically -->
         </div>
       </div>
 
-      <!-- 3.3 DÉCOMPOSITION MATHÉMATIQUE ET SOURCES PAR VALEUR -->
-      <div class="result-card math-card parallax-element" data-speed="1.1">
+      <!-- 4. Math Steps & Sources Links -->
+      <div class="result-card math-card">
         <div class="tech-card-header">
-          <span class="tech-index">[ 03.3 ]</span>
-          <h3>Décomposition analytique des calculs de cinétique (ASLT/Q10)</h3>
+          <span class="tech-index">[ 02 ]</span>
+          <h3 id="t-math-title">Décomposition Mathématique (Arrhenius)</h3>
         </div>
+        <p class="math-intro" id="t-math-intro">La méthode ASLT utilise l'équation d'Arrhenius : la durée de vie de référence est accélérée ou ralentie exponentiellement selon l'énergie d'activation (E<sub>a</sub>) du produit et l'écart de température de stockage.</p>
         <div class="calc-steps" id="calc-steps">
-          <!-- Injecté dynamiquement par app.js avec décomposition complète et sources -->
+          <!-- Injected dynamically -->
         </div>
       </div>
 
-      <!-- 3.4 GRAPHIQUE D'ALTÉRATION -->
-      <div class="result-card chart-card parallax-element" data-speed="0.8">
+      <!-- 5. Chart -->
+      <div class="result-card chart-card">
         <div class="tech-card-header">
-          <span class="tech-index">[ 03.4 ]</span>
-          <h3>Cinétique d'évolution de la fraîcheur résiduelle (%)</h3>
+          <span class="tech-index">[ 03 ]</span>
+          <h3 id="t-chart-title">Évolution de l'Indice de Fraîcheur</h3>
         </div>
+        <p class="chart-explanation" id="t-chart-explanation">
+          Ce graphique illustre la dégradation progressive de la fraîcheur du produit dans le temps. Il aide à visualiser le point critique (0%) où la limite de sécurité est dépassée.
+        </p>
         <div class="chart-wrapper">
           <canvas id="freshnessChart"></canvas>
         </div>
       </div>
 
+      <!-- Feedback Section -->
+      <div class="feedback-card">
+        <h3 id="t-feedback-title">Vos suggestions & Améliorations</h3>
+        <p class="feedback-desc" id="t-feedback-desc">Avez-vous une idée pour améliorer ce modèle ? Envoyez-moi un email !</p>
+        <form class="feedback-form" action="mailto:yassineboumeshoule@gmail.com" method="GET">
+          <input type="hidden" name="subject" value="Suggestion pour ShelfLifeAI">
+          <textarea class="feedback-input" name="body" rows="4" placeholder="Écrivez votre message ici..." id="t-feedback-placeholder"></textarea>
+          <button type="submit" class="feedback-submit" id="t-feedback-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            <span id="t-feedback-btn-text">Envoyer l'idée</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- 6. Warning Banner -->
+      <div class="warning-banner" id="t-warning-banner">
+        ⚠️ Attention : Cet outil fournit une estimation basée sur des modèles scientifiques prédictifs généraux. Il ne remplace en aucun cas une analyse microbiologique en laboratoire ni les dates limites officielles de consommation (DLC/DDM) fixées par les fabricants.
+      </div>
+
     </section>
 
-    <!-- PIED DE PAGE SCIENTIFIQUE -->
-    <footer class="footer parallax-element" data-speed="0.5">
-      <div class="footer-line"></div>
-      <div class="footer-grid">
-        <div class="footer-branding">
-          <h4>École Nationale des Sciences Appliquées de Béni Mellal (ENSA BM)</h4>
-          <p>Département Génie Agroalimentaire / Procédés. Projet académique d'analyse et de modélisation prédictive.</p>
-        </div>
-        <div class="footer-sources">
-          <h4>Bases de Données & Standards Scientifiques Exploités</h4>
-          <p>
-            • ASTM E1960 (Stabilité Accélérée)<br>
-            • ComBase DB (Microbiologie Prédictive)<br>
-            • FDA Food Code Guidelines (Facteurs pH & aw)<br>
-            • USDA-FSIS Pathogen Modeling Database<br>
-            • Travaux de Labuza & Schmidl (Modèles cinétiques Q10)
-          </p>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>© 2026 FreshIndex PRO. Développé de manière créative par Yassine Boumeshoule, élève ingénieur à l'ENSA BM.</p>
-      </div>
-    </footer>
+    <!-- Methodology Link (Opens Modal) -->
+    <div class="meth-link-container">
+      <button id="open-meth-btn" class="meth-btn">Lire la Méthodologie Complète</button>
+    </div>
 
   </main>
+
+  <!-- Methodology Modal -->
+  <div class="modal-overlay hidden" id="meth-modal">
+    <div class="modal-content">
+      <button class="modal-close" id="close-meth-btn">×</button>
+      <h2 id="t-meth-modal-title">Méthodologie Scientifique</h2>
+      <div class="modal-body" id="t-meth-modal-body">
+        <p>Ce simulateur repose sur la méthode <strong>ASLT (Accelerated Shelf Life Testing)</strong> combinée à l'équation d'Arrhenius.</p>
+        <h3>Modèle d'Arrhenius</h3>
+        <p>Contrairement au modèle simplifié Q10, nous utilisons l'énergie d'activation spécifique (E<sub>a</sub>) de chaque matrice pour modéliser la constante de vitesse de dégradation k : k = A exp(-E<sub>a</sub> / RT).</p>
+        <h3>Activité de l'eau (a<sub>w</sub>)</h3>
+        <p>L'a<sub>w</sub> représente l'eau libre disponible. Un ajout de sel ou de sucre baisse l'a<sub>w</sub> selon l'équation de Norrish, ralentissant drastiquement la prolifération bactérienne.</p>
+        <h3>Potentiel Hydrogène (pH)</h3>
+        <p>Un pH éloigné de l'optimum crée un stress osmotique. Le modèle plafonne cet effet car la dégradation physico-chimique continue même si les bactéries sont inhibées.</p>
+        <h3>Principe de Précaution</h3>
+        <p>En l'absence de certitude (ex: conservateurs), l'algorithme sélectionne toujours le <em>worst-case scenario</em> sanitaire.</p>
+      </div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>

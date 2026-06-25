@@ -1,692 +1,819 @@
 /**
  * FreshIndex PRO | Creative Scientific Prediction Engine
- * Modélisation prédictive ASLT / Q10
+ * Modélisation prédictive ASLT / Arrhenius
  * Conçu par Yassine Boumeshoule, élève ingénieur à l'ENSA BM.
  */
 
 'use strict';
 
 // ============================================================
-// 1. BASE DE DONNÉES BIOCHIMIQUES (Produits, Constantes & Sources)
+// 1. DICTIONNAIRE DE TRADUCTION BILINGUE (FR / AR)
 // ============================================================
+const i18n = {
+  fr: {
+    firstName: "Yassine",
+    lastName: "Boumeshoule",
+    sig: "BOUMESHOULE YASSINE",
+    badge: "MODÉLISATION DE LA DURÉE DE CONSERVATION (ASLT / ARRHENIUS)",
+    role: "Élève Ingénieur en Cycle d'Ingénieur",
+    school: "École Nationale des Sciences Appliquées de Béni Mellal (ENSA BM)",
+    step1: "Sélection de la Matrice Alimentaire",
+    step2: "Paramètres Physico-Chimiques & Environnementaux",
+    basicParams: "Paramètres de base",
+    temp: "Température de stockage (°C)",
+    pack: "Type d'emballage visible",
+    packOpen: "Non emballé / Perméable",
+    packVac: "Sous vide",
+    packMap: "Atmosphère Modifiée (MAP)",
+    preserv: "Présence de conservateurs",
+    yes: "Oui",
+    no: "Non",
+    dk: "Je ne sais pas",
+    penalties: "Pénalités Physiques",
+    cbOpen: "Produit ouvert",
+    cbCold: "Rupture chaîne du froid",
+    advToggle: "Réglages Avancés (Laboratoire)",
+    rh: "Humidité Ambiante (%)",
+    rhHint: "L'humidité n'affecte que les produits non scellés.",
+    phLabel: "Potentiel Hydrogène (pH)",
+    awLabel: "Activité de l'eau (aw)",
+    awHint: "Ajustez directement cette valeur si le produit contient beaucoup de sel/sucre (Norrish).",
+    light: "Exposition à la lumière",
+    lightLow: "Faible",
+    lightHigh: "Forte",
+    sig: "BOUMESHOULE YASSINE",
+    statusTag: "MODÈLE CINÉTIQUE ASLT",
+    heroLabel: "DURÉE DE CONSERVATION ESTIMÉE",
+    statusGauge: "Indice",
+    factorsTitle: "Influence Logique des Facteurs",
+    mathTitle: "Décomposition Mathématique (Arrhenius)",
+    mathIntro: "La méthode ASLT utilise l'équation d'Arrhenius : la durée de vie de référence est accélérée ou ralentie exponentiellement selon l'énergie d'activation (Ea) du produit et l'écart de température de stockage.",
+    chartTitle: "Évolution de l'Indice de Fraîcheur",
+    sourcesTitle: "Références Scientifiques Utilisées",
+    warning: "⚠️ Attention : Cet outil fournit une estimation basée sur des modèles scientifiques prédictifs généraux. Il ne remplace en aucun cas une analyse microbiologique en laboratoire ni les dates limites officielles de consommation (DLC/DDM) fixées par les fabricants.",
+    chartExplanation: "Ce graphique illustre la dégradation progressive de la fraîcheur du produit dans le temps. Il aide à visualiser rapidement le point critique (0%) où la limite de sécurité microbiologique ou physico-chimique est dépassée.",
+    methBtn: "Lire la Méthodologie Complète",
+    methTitle: "Méthodologie Scientifique",
+    feedbackTitle: "Vos suggestions & Améliorations",
+    feedbackDesc: "Avez-vous une idée pour améliorer ce modèle ? Envoyez-moi un email !",
+    feedbackPlaceholder: "Écrivez votre message ici...",
+    feedbackBtn: "Envoyer l'idée",
+    day: "jour",
+    days: "jours",
+    expired: "Périmé",
+    to: "à"
+  },
+  ar: {
+    firstName: "ياسين",
+    lastName: "بومسهول",
+    sig: "ياسين بومسهول",
+    badge: "نمذجة فترة الصلاحية (ASLT / ARRHENIUS)",
+    role: "طالب مهندس في سلك المهندسين",
+    school: "المدرسة الوطنية للعلوم التطبيقية ببني ملال (ENSA BM)",
+    step1: "اختيار المادة الغذائية",
+    step2: "المعايير الفيزيائية الكيميائية والبيئية",
+    basicParams: "المعايير الأساسية",
+    temp: "درجة حرارة التخزين (مئوية)",
+    pack: "نوع التغليف المرئي",
+    packOpen: "غير مغلف / قابل للنفاذ",
+    packVac: "مفرغ من الهواء",
+    packMap: "جو معدل (MAP)",
+    preserv: "وجود مواد حافظة",
+    yes: "نعم",
+    no: "لا",
+    dk: "لا أعلم",
+    penalties: "عقوبات فيزيائية",
+    cbOpen: "منتج مفتوح",
+    cbCold: "انقطاع سلسلة التبريد",
+    advToggle: "إعدادات متقدمة (مختبر)",
+    rh: "الرطوبة المحيطة (%)",
+    rhHint: "تؤثر الرطوبة فقط على المنتجات غير محكمة الغلق.",
+    phLabel: "الرقم الهيدروجيني (pH)",
+    awLabel: "النشاط المائي (aw)",
+    awHint: "قم بتعديل هذه القيمة مباشرة إذا كان المنتج يحتوي على الكثير من الملح/السكر.",
+    light: "التعرض للضوء",
+    lightLow: "ضعيف",
+    lightHigh: "قوي",
+    sig: "بومشول ياسين",
+    statusTag: "نموذج حركي ASLT",
+    heroLabel: "فترة الصلاحية المقدرة",
+    statusGauge: "مؤشر",
+    factorsTitle: "التأثير المنطقي للعوامل",
+    mathTitle: "التحليل الرياضي (أرينيوس)",
+    mathIntro: "تستخدم طريقة ASLT معادلة أرينيوس: يتم تسريع أو إبطاء العمر الافتراضي المرجعي بشكل أسي وفقًا لطاقة التنشيط (Ea) للمنتج والفرق في درجة حرارة التخزين.",
+    chartTitle: "تطور مؤشر النضارة",
+    sourcesTitle: "المراجع العلمية المستخدمة",
+    warning: "⚠️ تحذير: توفر هذه الأداة تقديرًا استنادًا إلى نماذج علمية تنبؤية عامة. ولا تحل بأي حال من الأحوال محل التحليل الميكروبيولوجي في المختبر أو المواعيد النهائية للاستهلاك الرسمية التي يحددها المصنعون.",
+    chartExplanation: "يوضح هذا الرسم البياني التدهور التدريجي لنضارة المنتج بمرور الوقت. يساعد في تصور النقطة الحرجة (0٪) التي يتم فيها تجاوز حد السلامة الميكروبيولوجية أو الكيميائية بسرعة.",
+    methBtn: "اقرأ المنهجية الكاملة",
+    methTitle: "المنهجية العلمية",
+    feedbackTitle: "اقتراحاتكم وتحسيناتكم",
+    feedbackDesc: "هل لديك فكرة لتحسين هذا النموذج؟ أرسل لي بريداً إلكترونياً!",
+    feedbackPlaceholder: "اكتب رسالتك أو اقتراحك هنا...",
+    feedbackBtn: "إرسال الفكرة",
+    day: "يوم",
+    days: "أيام",
+    expired: "منتهي الصلاحية",
+    to: "إلى"
+  },
+  ma: {
+    firstName: "ياسين",
+    lastName: "بومسهول",
+    sig: "ياسين بومسهول",
+    badge: "حساب مدة الصلاحية (ASLT / ARRHENIUS)",
+    role: "طالب مهندس ف سلك المهندسين",
+    school: "المدرسة الوطنية للعلوم التطبيقية ببني ملال (ENSA BM)",
+    step1: "عزل المادة الغذائية",
+    step2: "الظروف الفيزيائية والبيئية",
+    basicParams: "الظروف الأساسية",
+    temp: "درجة حرارة التخزين (مئوية)",
+    pack: "نوع التغليف",
+    packOpen: "محلولة / ما مغلفاش",
+    packVac: "تحت الفيد (مفرغ من الهواء)",
+    packMap: "جو معدل (MAP)",
+    preserv: "واش فيها مواد حافظة",
+    yes: "أيه",
+    no: "لا",
+    dk: "ما عرفتش",
+    penalties: "تأثيرات سلبية",
+    cbOpen: "المنتوج محلول",
+    cbCold: "سلسلة التبريد تقطعات",
+    advToggle: "إعدادات متقدمة (المختبر)",
+    rh: "الرطوبة المحيطة (%)",
+    rhHint: "الرطوبة كتأثر غير يلا كان المنتوج محلول.",
+    phLabel: "درجة الحموضة (pH)",
+    awLabel: "النشاط المائي (aw)",
+    awHint: "بدل هاد القيمة يلا كان المنتوج فيه بزاف ديال الملحة أو السكر.",
+    light: "التعرض للضو",
+    lightLow: "قليل",
+    lightHigh: "بزاف",
+    statusTag: "نموذج حركي ASLT",
+    heroLabel: "مدة الصلاحية المتوقعة",
+    statusGauge: "المؤشر",
+    factorsTitle: "كيفاش هاد العوامل كتأثر",
+    mathTitle: "الحساب الرياضي (أرينيوس)",
+    mathIntro: "طريقة ASLT كتخدم بمعادلة أرينيوس: مدة الصلاحية كتزيد ولا كتقص على حساب طاقة التنشيط (Ea) والفرق فدرجة الحرارة.",
+    chartTitle: "تطور مؤشر الطراوة",
+    sourcesTitle: "المراجع العلمية لي خدمنا بيها",
+    warning: "⚠️ رد البال: هاد الأداة كتعطي غير تقدير مبني على نماذج علمية. هادشي ما كيعوضش التحليل فالمختبر ولا التاريخ لي كتحطو الشركة.",
+    chartExplanation: "هاد المبيان كيبين كيفاش الطراوة ديال المنتوج كتنقص مع الوقت. كيعاونك تشوف بالزربة النقطة الحرجة (0٪) فين كتولي الماكلة خاسرة ومخصهاش تتكال.",
+    methBtn: "اقرا المنهجية كاملة",
+    methTitle: "المنهجية العلمية",
+    feedbackTitle: "اقتراحاتكم باش نحسنو الموقع",
+    feedbackDesc: "عندك شي فكرة باش نزيدو القدام بهاد الموديل؟ صيفط ليا إيميل ديريكت!",
+    feedbackPlaceholder: "كتب الفكرة ولا الملاحظة ديالك هنا...",
+    feedbackBtn: "صيفط الاقتراح",
+    expired: "خاسر",
+    to: "تال"
+  }
+};
+
+let currentLang = 'fr';
+
+// ============================================================
+// 2. BASE DE DONNÉES BIOCHIMIQUES (Produits, Ea & Sources)
+// ============================================================
+// rh_sensitivity et ph_k ont été augmentés pour un impact clair et fort des curseurs
 const PRODUCT_DB = {
   lait_pasteurise: {
-    name: 'Lait pasteurisé', T_ref: 4, RH_ref: 80, DLC_ref: 7, q10: 2.8,
-    rh_sensitivity: 0.35, ph_opt: 6.7, ph_k: 0.12, aw_ref: 0.990, aw_k: 6.5,
+    name: { fr: 'Lait pasteurisé', ar: 'حليب مبستر', ma: 'حليب مبستر' },
+    T_ref: 4, RH_ref: 80, DLC_ref: 7, Ea: 66.7, // kJ/mol
+    rh_sensitivity: 2.5, ph_opt: 6.7, ph_k: 1.5, aw_ref: 0.990, aw_k: 6.5,
     f_open: 0.70, f_cold_break: 0.50, f_preservatives: 0.80, ph_default: 6.7, aw_default: 0.990,
-    source: 'Labuza & Schmidl (1985) / ASTM E1960'
-  },
-  lait_uht: {
-    name: 'Lait UHT', T_ref: 20, RH_ref: 60, DLC_ref: 180, q10: 2.5,
-    rh_sensitivity: 0.08, ph_opt: 6.8, ph_k: 0.08, aw_ref: 0.990, aw_k: 4.5,
-    f_open: 0.10, f_cold_break: 0.95, f_preservatives: 0.90, ph_default: 6.8, aw_default: 0.990,
-    source: 'IDF Bulletin n°345 / ICH Q1A(R2)'
-  },
-  yaourt: {
-    name: 'Yaourt fermenté', T_ref: 4, RH_ref: 75, DLC_ref: 21, q10: 2.2,
-    rh_sensitivity: 0.25, ph_opt: 4.3, ph_k: 0.10, aw_ref: 0.980, aw_k: 5.0,
-    f_open: 0.55, f_cold_break: 0.65, f_preservatives: 0.75, ph_default: 4.3, aw_default: 0.980,
-    source: 'Codex Stan 243 / ComBase DB'
-  },
-  fromage: {
-    name: 'Fromage (pâte molle)', T_ref: 4, RH_ref: 85, DLC_ref: 14, q10: 2.5,
-    rh_sensitivity: 0.50, ph_opt: 5.8, ph_k: 0.10, aw_ref: 0.970, aw_k: 6.0,
-    f_open: 0.65, f_cold_break: 0.50, f_preservatives: 0.85, ph_default: 5.5, aw_default: 0.970,
-    source: 'ANSES Avis 2014-SA-0117 / ComBase'
+    theme: { bg: '#EBF3F5', text: '#14241F', textMuted: '#5C6B66', accent: '#72A4B5' },
+    sourceEa: 'https://emerginginvestigators.org/articles/22-023/pdf'
   },
   viande: {
-    name: 'Viande bovine fraîche', T_ref: 4, RH_ref: 80, DLC_ref: 4, q10: 3.0,
-    rh_sensitivity: 0.40, ph_opt: 5.8, ph_k: 0.15, aw_ref: 0.990, aw_k: 7.0,
+    name: { fr: 'Viande fraîche', ar: 'لحم طازج', ma: 'لحم طري' },
+    T_ref: 4, RH_ref: 80, DLC_ref: 4, Ea: 106.9,
+    rh_sensitivity: 2.8, ph_opt: 5.8, ph_k: 1.8, aw_ref: 0.990, aw_k: 7.0,
     f_open: 0.65, f_cold_break: 0.45, f_preservatives: 0.80, ph_default: 5.8, aw_default: 0.990,
-    source: 'USDA-FSIS Meat Guidelines'
-  },
-  viande_hachee: {
-    name: 'Viande hachée', T_ref: 4, RH_ref: 80, DLC_ref: 2, q10: 3.2,
-    rh_sensitivity: 0.45, ph_opt: 6.0, ph_k: 0.18, aw_ref: 0.990, aw_k: 7.5,
-    f_open: 0.55, f_cold_break: 0.40, f_preservatives: 0.75, ph_default: 5.8, aw_default: 0.990,
-    source: 'USDA Pathogen Modeling Program'
+    theme: { bg: '#4A1515', text: '#FFFFFF', textMuted: '#FFCACA', accent: '#B83232' },
+    sourceEa: 'https://www.academia.edu/118108217/Determination_of_TDP_and_TDT_value_for_spoilage_bacteria'
   },
   poisson: {
-    name: 'Poisson frais (cabillaud)', T_ref: 2, RH_ref: 85, DLC_ref: 3, q10: 3.5,
-    rh_sensitivity: 0.40, ph_opt: 6.8, ph_k: 0.12, aw_ref: 0.990, aw_k: 7.0,
+    name: { fr: 'Poisson frais', ar: 'سمك طازج', ma: 'حوت طري' },
+    T_ref: 2, RH_ref: 85, DLC_ref: 3, Ea: 80.0,
+    rh_sensitivity: 2.8, ph_opt: 6.8, ph_k: 1.6, aw_ref: 0.990, aw_k: 7.0,
     f_open: 0.60, f_cold_break: 0.38, f_preservatives: 0.80, ph_default: 6.5, aw_default: 0.990,
-    source: 'EFSA Journal (2010) / Huss et al.'
+    theme: { bg: '#1A2B4C', text: '#FFFFFF', textMuted: '#B3C6E5', accent: '#4A78C4' },
+    sourceEa: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC92181/'
   },
   jus: {
-    name: 'Jus de fruits frais', T_ref: 4, RH_ref: 70, DLC_ref: 10, q10: 2.0,
-    rh_sensitivity: 0.15, ph_opt: 3.8, ph_k: 0.08, aw_ref: 0.970, aw_k: 4.5,
+    name: { fr: 'Jus de fruits', ar: 'عصير فواكه', ma: 'عصير' },
+    T_ref: 4, RH_ref: 70, DLC_ref: 10, Ea: 42.0,
+    rh_sensitivity: 1.5, ph_opt: 3.8, ph_k: 1.2, aw_ref: 0.970, aw_k: 4.5,
     f_open: 0.40, f_cold_break: 0.60, f_preservatives: 0.70, ph_default: 3.5, aw_default: 0.970,
-    source: 'ComBase Yeast Modeling / Spoilage'
+    theme: { bg: '#D66A00', text: '#FFFFFF', textMuted: '#FFE3C2', accent: '#FF9500' },
+    sourceEa: 'https://www.researchgate.net/publication/248513213_Shelflife_prediction_of_fresh_blood_orange_juice'
+  },
+  fromage: {
+    name: { fr: 'Fromage frais', ar: 'جبن طازج', ma: 'فرماج طري' },
+    T_ref: 4, RH_ref: 85, DLC_ref: 14, Ea: 13.0,
+    rh_sensitivity: 2.2, ph_opt: 5.8, ph_k: 1.5, aw_ref: 0.970, aw_k: 6.0,
+    f_open: 0.65, f_cold_break: 0.50, f_preservatives: 0.85, ph_default: 5.5, aw_default: 0.970,
+    theme: { bg: '#D4A017', text: '#14241F', textMuted: '#5C4000', accent: '#FFFFFF' },
+    sourceEa: 'https://www.sciencedirect.com/science/article/pii/S0022030292780540'
+  },
+  yaourt: {
+    name: { fr: 'Yaourt fermenté', ar: 'زبادي مخمر', ma: 'دانون (ياغورت)' },
+    T_ref: 4, RH_ref: 75, DLC_ref: 21, Ea: 67.5,
+    rh_sensitivity: 2.0, ph_opt: 4.3, ph_k: 1.4, aw_ref: 0.980, aw_k: 5.0,
+    f_open: 0.55, f_cold_break: 0.65, f_preservatives: 0.75, ph_default: 4.3, aw_default: 0.980,
+    theme: { bg: '#F5EBEF', text: '#14241F', textMuted: '#6B5C62', accent: '#C46A8B' },
+    sourceEa: 'https://www.sciopen.com/article/10.7506/rykxyjs1671-5187-20230914-045'
   },
   conserve: {
-    name: 'Produit appertisé (conserve)', T_ref: 20, RH_ref: 60, DLC_ref: 1095, q10: 2.0,
-    rh_sensitivity: 0.05, ph_opt: 6.5, ph_k: 0.05, aw_ref: 0.950, aw_k: 2.0,
+    name: { fr: 'Conserve', ar: 'معلبات', ma: 'معلبات' },
+    T_ref: 20, RH_ref: 60, DLC_ref: 1095, Ea: 90.0,
+    rh_sensitivity: 0.5, ph_opt: 6.5, ph_k: 0.8, aw_ref: 0.950, aw_k: 2.0,
     f_open: 0.04, f_cold_break: 0.98, f_preservatives: 0.90, ph_default: 6.0, aw_default: 0.950,
-    source: 'Codex Alimentarius CAC/RCP 23-1979'
+    theme: { bg: '#2C3539', text: '#FFFFFF', textMuted: '#B0B0B0', accent: '#78909C' },
+    sourceEa: 'https://www.academia.edu/53626044/Kinetics_of_Food_Deterioration_and_Shelf_Life_Prediction'
   }
 };
 
 const PRODUCT_ICONS = {
   lait_pasteurise: '<svg viewBox="0 0 24 24"><path d="M7 2h10v3l2 3v14H5V8l2-3V2zm2 2v2h6V4H9zm-2 5v11h10V9H7z"/></svg>',
-  lait_uht:        '<svg viewBox="0 0 24 24"><path d="M4 2h16v20H4V2zm2 2v16h12V4H6zm3 4h6v2H9V8zm0 4h6v2H9v-2z"/></svg>',
-  yaourt:          '<svg viewBox="0 0 24 24"><path d="M6 8l2-6h8l2 6v14H6V8zm2 2v10h8V10H8z"/></svg>',
-  fromage:         '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-5.5c0 .83-.67 1.5-1.5 1.5S7 15.33 7 14.5 7.67 13 8.5 13s1.5.67 1.5 1.5z"/></svg>',
   viande:          '<svg viewBox="0 0 24 24"><path d="M18.8 8.1l-2.9-2.9C15.1 4.4 14.1 4 13 4c-1.1 0-2.1.4-2.9 1.2L5.2 10.1c-1.6 1.6-1.6 4.2 0 5.8l2.9 2.9c.8.8 1.8 1.2 2.9 1.2 1.1 0 2.1-.4 2.9-1.2l4.9-4.9c1.6-1.6 1.6-4.2 0-5.8zM9.5 17.4l-2.9-2.9c-.8-.8-.8-2.1 0-2.9l4.9-4.9c.4-.4.9-.6 1.5-.6s1.1.2 1.5.6l2.9 2.9c.8.8.8 2.1 0 2.9l-4.9 4.9c-.8.8-2.1.8-2.9 0z"/></svg>',
-  viande_hachee:   '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="9" cy="9" r="1.5"/><circle cx="15" cy="9" r="1.5"/><circle cx="12" cy="14" r="1.5"/><circle cx="8" cy="14" r="1.5"/><circle cx="16" cy="14" r="1.5"/></svg>',
   poisson:         '<svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8zm4-9h-2v2h2v-2zm-6 0H8v2h2v-2z"/></svg>',
   jus:             '<svg viewBox="0 0 24 24"><path d="M7 2v2h10V2H7zm2 4l-2 16h10l-2-16H9zm2 8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>',
+  fromage:         '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-5.5c0 .83-.67 1.5-1.5 1.5S7 15.33 7 14.5 7.67 13 8.5 13s1.5.67 1.5 1.5z"/></svg>',
+  yaourt:          '<svg viewBox="0 0 24 24"><path d="M6 8l2-6h8l2 6v14H6V8zm2 2v10h8V10H8z"/></svg>',
   conserve:        '<svg viewBox="0 0 24 24"><path d="M4 6v12c0 2.21 3.58 4 8 4s8-1.79 8-4V6c0-2.21-3.58-4-8-4S4 3.79 4 6zm14 0c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zM6 6c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm6 14c-3.31 0-6-1.34-6-3V9c1.66 1.34 4.34 2 6 2s4.34-.66 6-2v8c0 1.66-2.69 3-6 3z"/></svg>'
 };
 
+// Constante des gaz parfaits R (kJ/(mol.K))
+const R = 0.008314;
+let chartInstance = null;
+
+// ============================================================
+// 3. INITIALISATION ET GESTIONNAIRES D'ÉVÉNEMENTS
+// ============================================================
 document.addEventListener('DOMContentLoaded', () => {
 
-  const form = document.getElementById('analysis-form');
-  const resultsPanel = document.getElementById('results-panel');
+  initLangToggle();
+  
   const gallery = document.getElementById('product-gallery');
   const inputProduit = document.getElementById('produit');
   
-  const cursorGlow = document.getElementById('cursor-glow');
-  const cursorDot = document.getElementById('cursor-dot');
-  
-  let chartInstance = null;
-
-  // Initialisation de la date du jour par défaut
-  document.getElementById('date_production').value = new Date().toISOString().split('T')[0];
-
-  // ============================================================
-  // 2. CURSEUR INTERACTIF GLOW ET GESTION DU HOVER
-  // ============================================================
-  let mouseX = window.innerWidth / 2;
-  let mouseY = window.innerHeight / 2;
-  let glowX = mouseX;
-  let glowY = mouseY;
-
-  window.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-    
-    // Positionnement instantané du micro-point central
-    cursorDot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0)`;
-  });
-
-  // Animation avec inertie (filtre passe-bas) pour le halo lumineux
-  function renderCursor() {
-    glowX += (mouseX - glowX) * 0.12;
-    glowY += (mouseY - glowY) * 0.12;
-    
-    cursorGlow.style.transform = `translate3d(${glowX}px, ${glowY}px, 0)`;
-    requestAnimationFrame(renderCursor);
-  }
-  renderCursor();
-
-  // Délégation d'événement pour l'expansion du curseur sur les éléments interactifs
-  document.addEventListener('mouseover', (e) => {
-    if (e.target.closest('a, button, .product-card, input, label, select, .cb-wrap')) {
-      cursorDot.classList.add('hovered');
-    }
-  });
-  document.addEventListener('mouseout', (e) => {
-    if (e.target.closest('a, button, .product-card, input, label, select, .cb-wrap')) {
-      cursorDot.classList.remove('hovered');
-    }
-  });
-
-
-
-  // ============================================================
-  // 4. GÉNÉRATION DYNAMIQUE DU SÉLECTEUR DE MATRICES
-  // ============================================================
   for (const [key, p] of Object.entries(PRODUCT_DB)) {
     const card = document.createElement('div');
     card.className = 'product-card';
+    card.dataset.key = key;
     card.innerHTML = `
       <div class="card-icon">${PRODUCT_ICONS[key]}</div>
-      <div class="card-name">${p.name}</div>
+      <div class="card-name">${p.name[currentLang]}</div>
     `;
     card.addEventListener('click', () => {
       document.querySelectorAll('.product-card').forEach(c => c.classList.remove('active'));
       card.classList.add('active');
       inputProduit.value = key;
+      
+      // Remplissage des valeurs
       document.getElementById('ph').value = p.ph_default;
+      document.getElementById('ph-val-display').textContent = p.ph_default;
+      
       document.getElementById('aw').value = p.aw_default.toFixed(3);
+      document.getElementById('aw-val-display').textContent = p.aw_default.toFixed(3);
+      
+      document.getElementById('temperature').value = p.T_ref;
+
+      // Application du THÈME très fort et visible
+      document.documentElement.style.setProperty('--bg', p.theme.bg);
+      document.documentElement.style.setProperty('--bg-text', p.theme.text);
+      document.documentElement.style.setProperty('--bg-text-muted', p.theme.textMuted);
+      document.documentElement.style.setProperty('--accent-color', p.theme.accent);
+      
+      const hex2rgb = (hex) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : null;
+      };
+      document.documentElement.style.setProperty('--accent-rgb', hex2rgb(p.theme.accent));
+
+      // Génération des icônes d'arrière-plan aléatoires
+      generateBackgroundIcons(key);
+      
+      // Recalculer instantanément
+      runCalculation();
     });
     gallery.appendChild(card);
   }
 
-  // Permettre le glissement horizontal fluide de la galerie (souris/drag)
-  let isDown = false;
-  let startX;
-  let scrollLeft;
-  const wrapper = document.querySelector('.gallery-wrapper');
+  // Clic initial sur le premier produit pour que tout soit fonctionnel dès le chargement
+  setTimeout(() => {
+    const firstCard = document.querySelector('.product-card');
+    if (firstCard) firstCard.click();
+  }, 100);
 
-  wrapper.addEventListener('mousedown', (e) => {
-    isDown = true;
-    startX = e.pageX - wrapper.offsetLeft;
-    scrollLeft = wrapper.scrollLeft;
-  });
-  wrapper.addEventListener('mouseleave', () => isDown = false);
-  wrapper.addEventListener('mouseup', () => isDown = false);
-  wrapper.addEventListener('mousemove', (e) => {
-    if(!isDown) return;
-    e.preventDefault();
-    const x = e.pageX - wrapper.offsetLeft;
-    const walk = (x - startX) * 1.8;
-    wrapper.scrollLeft = scrollLeft - walk;
-  });
+  // Écouteur Température Manuel
+  document.getElementById('temperature').addEventListener('input', runCalculation);
 
-  // ============================================================
-  // 5. MODÉLISATION MATHÉMATIQUE ASLT (ALGORITHME Q10)
-  // ============================================================
-  function calcShelfLife(key, T, RH, pH, aw, isOpen, coldBreak, preserv, daysElapsed) {
-    const p = PRODUCT_DB[key];
-    
-    // Facteur Q10 thermique
-    const fT  = Math.pow(p.q10, (T - p.T_ref) / 10);
-    
-    // Facteur d'Humidité relative
-    const fRH = (p.sealed && !isOpen) ? 1.0 : Math.max(0.5, Math.min(3.0, Math.pow(Math.max(5, RH) / Math.max(1, p.RH_ref), p.rh_sensitivity)));
-    
-    // Facteur pH (Fonction Rosso / Écart optimal)
-    const dPH = pH - p.ph_opt;
-    const fPH = Math.max(0.35, Math.min(2.5, dPH >= 0 ? 1 + p.ph_k * dPH : 1 / (1 + p.ph_k * (-dPH))));
-    
-    // Facteur aw (Activité de l'eau libre - Équation d'Arrhenius-Sorption)
-    const fAW = Math.max(0.3, Math.min(4.0, Math.exp(p.aw_k * (aw - p.aw_ref))));
-
-    // Taux d'accélération brut (AF)
-    let AF = fT * fRH * fPH * fAW;
-    
-    // Inhibition par conservateurs
-    if (preserv) {
-      AF *= p.f_preservatives;
-    }
-
-    // Durée de vie projetée théorique
-    let DLC_est = p.DLC_ref / AF;
-    
-    // Pénalités de manipulation physique
-    if (isOpen) DLC_est *= p.f_open;
-    if (coldBreak) DLC_est *= p.f_cold_break;
-
-    // Limites de garde physiques
-    DLC_est = Math.max(0.1, Math.min(p.DLC_ref * 25, DLC_est));
-    
-    return { 
-      p, fT, fRH, fPH, fAW, AF, DLC_est, 
-      daysRemaining: DLC_est - daysElapsed 
-    };
-  }
-
-  // ============================================================
-  // 6. SOUMISSION ET RENDU DES RÉSULTATS SCIENTIFIQUES
-  // ============================================================
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const key = inputProduit.value;
-    if (!key) {
-      alert("Erreur opérationnelle : Sélectionnez d'abord une matrice alimentaire dans l'étape 01.");
-      return;
-    }
-
-    // Retrait des classes d'affichage pour forcer le redéclenchement de la transition CSS
-    resultsPanel.classList.remove('show');
-    resultsPanel.classList.add('hidden');
-
-    setTimeout(() => {
-      processAndRender(key);
-    }, 100);
-  });
-
-  // Rendu de la prédiction avec explications détaillées et sources
-  function processAndRender(key) {
-    const T = parseFloat(document.getElementById('temperature').value);
-    const RH = parseFloat(document.getElementById('humidite').value);
-    const pH = parseFloat(document.getElementById('ph').value);
-    const aw = parseFloat(document.getElementById('aw').value);
-    const isOpen = document.getElementById('produit_ouvert').checked;
-    const coldBreak = document.getElementById('rupture_froid').checked;
-    const preserv = document.getElementById('conservateurs').checked;
-
-    const dateProdVal = document.getElementById('date_production').value;
-    const dateProd = new Date(dateProdVal);
-    const elapsed = Math.max(0, (Date.now() - dateProd.getTime()) / 86400000);
-
-    const res = calcShelfLife(key, T, RH, pH, aw, isOpen, coldBreak, preserv, elapsed);
-    
-    // --- 1. TITRE DE LA MATRICE ET INDICATEUR D'ÉTAT ---
-    document.getElementById('res-product-title').textContent = res.p.name;
-    
-    const rJours = document.getElementById('res-jours');
-    const rStatusVisual = document.getElementById('res-status-visual');
-    const rStatusText = document.getElementById('res-status-visual-text');
-    const mainCard = document.getElementById('main-result-card');
-    
-    // Détermination de la criticité de l'état résiduel
-    let statusClass = "safe";
-    let statusGlow = "var(--safe-glow)";
-    let statusText = "SÛR (CONSERVATION EXCELLENTE)";
-    let daysString = "";
-
-    if (res.daysRemaining <= 0) {
-      statusClass = "danger";
-      statusGlow = "var(--danger-glow)";
-      statusText = "MATRICE PÉRIMÉE";
-      daysString = "PÉRIMÉ";
-      rJours.style.color = "var(--danger)";
-    } else {
-      const ratio = res.daysRemaining / res.p.DLC_ref;
-      if (ratio < 0.25) {
-        statusClass = "caution";
-        statusGlow = "var(--caution-glow)";
-        statusText = "ALERTE / ALTÉRATION IMMINENTE";
-        rJours.style.color = "var(--caution)";
-      } else {
-        statusClass = "safe";
-        statusGlow = "var(--safe-glow)";
-        statusText = "CONSERVATION OPTIMALE";
-        rJours.style.color = "var(--safe)";
-      }
-      
-      // Formatage de l'unité (heures vs jours)
-      daysString = res.daysRemaining < 1 
-        ? `${(res.daysRemaining * 24).toFixed(0)} HEURES` 
-        : `${res.daysRemaining.toFixed(0)} JOURS`;
-    }
-
-    // Mise à jour de l'indicateur visuel et de la lueur de la carte
-    rStatusText.textContent = res.daysRemaining <= 0 ? "Périmé" : (res.daysRemaining / res.p.DLC_ref < 0.25 ? "Alerte" : "Optimal");
-    const statusLight = rStatusVisual.querySelector('.status-light-core');
-    const pulseRing = rStatusVisual.querySelector('.pulse-ring');
-    
-    // Application dynamique des couleurs
-    let themeColor = "var(--safe)";
-    if (statusClass === "caution") themeColor = "var(--caution)";
-    if (statusClass === "danger") themeColor = "var(--danger)";
-    
-    statusLight.style.backgroundColor = themeColor;
-    statusLight.style.boxShadow = `0 0 20px ${statusGlow}, 0 0 40px ${statusGlow}`;
-    pulseRing.style.borderColor = themeColor;
-    
-    mainCard.style.borderColor = `rgba(var(--${statusClass}-rgb), 0.35)`;
-    mainCard.style.boxShadow = `0 35px 70px rgba(var(--${statusClass}-rgb), 0.06)`;
-
-    // Animation d'incrémentation fluide du résultat principal (Count Up)
-    animateResultValue(rJours, daysString, res.daysRemaining <= 0, 1000);
-
-    const expDate = new Date();
-    expDate.setDate(expDate.getDate() + Math.max(0, res.daysRemaining));
-    document.getElementById('res-date').textContent = res.daysRemaining <= 0 ? "Non applicable" : expDate.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-
-    // --- 2. IMPACT DÉTAILLÉ ET JUSTIFICATION SCIENTIFIQUE DES FACTEURS (LE POURQUOI & LA SOURCE) ---
-    const formatImp = (v) => {
-      if (v > 1.05) return `<span class="factor-impact-badge badge-accel">Cinétique Accélérée (×${v.toFixed(2)})</span>`;
-      if (v < 0.95) return `<span class="factor-impact-badge badge-slow">Cinétique Inhibitrice (×${v.toFixed(2)})</span>`;
-      return `<span class="factor-impact-badge badge-neut">Stabilité Neutre</span>`;
-    };
-
-    // Construction HTML du tableau des facteurs
-    let factorsHTML = `
-      <div class="factor-item">
-        <div class="factor-top-line">
-          <div class="factor-meta-left">
-            <span class="factor-title">Variation Thermique (${T}°C)</span>
-            <span class="factor-origin-val">Valeur de référence : ${res.p.T_ref}°C | Q10 : ${res.p.q10}</span>
-          </div>
-          ${formatImp(res.fT)}
-        </div>
-        <p class="factor-explanation">
-          <strong>Pourquoi :</strong> La température gouverne l'activité métabolique et enzymatique des bactéries (règle d'Arrhenius). Chaque élévation de température augmente la constante cinétique de détérioration, activant les réactions microbiennes de rancissement et d'acidification.
-        </p>
-        <span class="factor-source">Source : Travaux de Labuza sur les cinétiques alimentaires (1985)</span>
-      </div>
-
-      <div class="factor-item">
-        <div class="factor-top-line">
-          <div class="factor-meta-left">
-            <span class="factor-title">Hygrométrie de Stockage (${RH}%)</span>
-            <span class="factor-origin-val">Valeur de référence : ${res.p.RH_ref}% | Sensibilité : ${res.p.rh_sensitivity}</span>
-          </div>
-          ${formatImp(res.fRH)}
-        </div>
-        <p class="factor-explanation">
-          <strong>Pourquoi :</strong> L'humidité relative de l'air ambiant interagit directement avec l'eau de surface libre du produit si l'emballage est perméable ou ouvert. Une hygrométrie excessive empêche la déshydratation barrière superficielle et crée un environnement optimal pour la prolifération des moisissures et bactéries aérobies.
-        </p>
-        <span class="factor-source">Source : Chirife & Fontan - Isothermes de Sorption (1982)</span>
-      </div>
-
-      <div class="factor-item">
-        <div class="factor-top-line">
-          <div class="factor-meta-left">
-            <span class="factor-title">Potentiel Hydrogène Interne (pH ${pH})</span>
-            <span class="factor-origin-val">Valeur optimale pour la croissance : pH ${res.p.ph_opt}</span>
-          </div>
-          ${formatImp(res.fPH)}
-        </div>
-        <p class="factor-explanation">
-          <strong>Pourquoi :</strong> L'acidité du milieu altère le gradient électrochimique et la force proton-motrice transmembranaire des micro-organismes. Un écart par rapport au pH optimal du produit perturbe l'homéostasie intracellulaire de la bactérie, dénature ses enzymes et ralentit ou arrête sa division cellulaire.
-        </p>
-        <span class="factor-source">Source : Booth - Régulation du pH interne bactérien (1985) / Base ComBase</span>
-      </div>
-
-      <div class="factor-item">
-        <div class="factor-top-line">
-          <div class="factor-meta-left">
-            <span class="factor-title">Activité de l'Eau de la Matrice (aw ${aw})</span>
-            <span class="factor-origin-val">Valeur de référence matricielle : aw ${res.p.aw_ref}</span>
-          </div>
-          ${formatImp(res.fAW)}
-        </div>
-        <p class="factor-explanation">
-          <strong>Pourquoi :</strong> L'activité de l'eau (aw) représente la quantité d'eau libre disponible pour le transport de nutriments et les réactions métaboliques. Une aw basse déclenche un choc osmotique, forçant l'eau à quitter la cellule bactérienne (plasmolyse), ce qui allonge drastiquement la phase de latence microbiologique.
-        </p>
-        <span class="factor-source">Source : Christian - Effets osmotiques sur la viabilité microbienne (1980)</span>
-      </div>
-    `;
-
-    // Ajouts conditionnels selon les pénalités cochées
-    if (isOpen) {
-      factorsHTML += `
-        <div class="factor-item">
-          <div class="factor-top-line">
-            <div class="factor-meta-left">
-              <span class="factor-title">Conditionnement Altéré (Emballage Ouvert)</span>
-              <span class="factor-origin-val">Multiplicateur d'altération : ×${(1/res.p.f_open).toFixed(2)}</span>
-            </div>
-            <span class="factor-impact-badge badge-accel">Cinétique Accélérée</span>
-          </div>
-          <p class="factor-explanation">
-            <strong>Pourquoi :</strong> La rupture de l'étanchéité de l'emballage sature la matrice alimentaire en oxygène atmosphérique gazeux. Cela supprime l'atmosphère protectrice (sous CO2/N2) et favorise le développement exponentiel des germes d'altération aérobies stricts tels que les <em>Pseudomonas</em>.
-          </p>
-          <span class="factor-source">Source : Gram & Huss - Évolution microbiologique des aliments frais (1996)</span>
-        </div>
-      `;
-    }
-
-    if (coldBreak) {
-      factorsHTML += `
-        <div class="factor-item">
-          <div class="factor-top-line">
-            <div class="factor-meta-left">
-              <span class="factor-title">Rupture du Froid (Choc Thermique)</span>
-              <span class="factor-origin-val">Multiplicateur d'altération : ×${(1/res.p.f_cold_break).toFixed(2)}</span>
-            </div>
-            <span class="factor-impact-badge badge-accel">Cinétique Accélérée</span>
-          </div>
-          <p class="factor-explanation">
-            <strong>Pourquoi :</strong> Une excursion temporaire de température brise la latence des cellules bactériennes psychrotrophes. Le retour ultérieur au froid n'inverse pas le réveil physiologique entamé, projetant immédiatement la flore dans sa phase de croissance exponentielle active.
-          </p>
-          <span class="factor-source">Source : McKellar et al. - Dynamiques de latence thermique (1997)</span>
-        </div>
-      `;
-    }
-
-    if (preserv) {
-      factorsHTML += `
-        <div class="factor-item">
-          <div class="factor-top-line">
-            <div class="factor-meta-left">
-              <span class="factor-title">Agents Conservateurs (Inhibiteurs Additifs)</span>
-              <span class="factor-origin-val">Coefficient d'inhibition : ×${res.p.f_preservatives.toFixed(2)}</span>
-            </div>
-            <span class="factor-impact-badge badge-slow">Cinétique Inhibitrice</span>
-          </div>
-          <p class="factor-explanation">
-            <strong>Pourquoi :</strong> Les acides organiques faibles présents sous forme non dissociée s'infiltrent à travers la membrane cellulaire bactérienne. Une fois à l'intérieur du cytoplasme neutre, ils libèrent des protons, provoquant une acidification interne que la bactérie tente d'évacuer au détriment de ses réserves énergétiques en ATP.
-          </p>
-          <span class="factor-source">Source : Davidson - Antimicrobiens dans les aliments (2001)</span>
-        </div>
-      `;
-    }
-
-    document.getElementById('factors-list').innerHTML = factorsHTML;
-
-    // --- 3. DÉCOMPOSITION ANALYTIQUE DES CALCULS ET DETAILS PAR VALEUR ---
-    document.getElementById('calc-steps').innerHTML = `
-      <div class="calc-step-row">
-        <span class="calc-step-num">Étape A</span>
-        <div class="calc-step-content">
-          <span class="calc-step-title">Initialisation de la Constante Statique du Produit</span>
-          <p class="calc-step-desc">
-            Le modèle prédit la stabilité à partir de la durée limite de consommation standard (DLC_ref) déterminée en laboratoire de référence sous une température de stockage spécifiée (T_ref).
-          </p>
-          <div class="calc-step-formula">
-            DLC_ref = ${res.p.DLC_ref} jours | Température de référence (T_ref) = ${res.p.T_ref}°C
-          </div>
-          <span class="calc-step-source">Source des constantes de départ : ${res.p.source}</span>
-        </div>
-      </div>
-
-      <div class="calc-step-row">
-        <span class="calc-step-num">Étape B</span>
-        <div class="calc-step-content">
-          <span class="calc-step-title">Calcul de la Thermocinétique (Facteur Thermique fT)</span>
-          <p class="calc-step-desc">
-            La variation de vitesse de dégradation liée à l'énergie d'activation thermique est calculée par la loi du coefficient Q10.
-          </p>
-          <div class="calc-step-formula">
-            fT = Q10 ^ ((T - T_ref) / 10) = ${res.p.q10} ^ ((${T} - ${res.p.T_ref}) / 10) = ${res.fT.toFixed(4)}
-          </div>
-          <span class="calc-step-source">Source physique : Modèle cinétique empirique ASTM E1960</span>
-        </div>
-      </div>
-
-      <div class="calc-step-row">
-        <span class="calc-step-num">Étape C</span>
-        <div class="calc-step-content">
-          <span class="calc-step-title">Calcul de la Sorption d'Eau (Facteur d'Humidité fRH)</span>
-          <p class="calc-step-desc">
-            Détermination de l'impact hygrométrique externe sur l'humidité superficielle libre, pondéré par la sensibilité de la matrice.
-          </p>
-          <div class="calc-step-formula">
-            fRH = (RH / RH_ref) ^ rh_sensitivity = (${RH} / ${res.p.RH_ref}) ^ ${res.p.rh_sensitivity} = ${res.fRH.toFixed(4)}
-          </div>
-          <span class="calc-step-source">Source d'équilibre de phase : Isothermes de sorption de Labuza (1984)</span>
-        </div>
-      </div>
-
-      <div class="calc-step-row">
-        <span class="calc-step-num">Étape D</span>
-        <div class="calc-step-content">
-          <span class="calc-step-title">Modulations Biochimiques de la Matrice (fPH & fAW)</span>
-          <p class="calc-step-desc">
-            Les écarts de l'activité de l'eau libre (aw) et du pH par rapport à leurs valeurs basales sont calculés via des fonctions cardinales.
-          </p>
-          <div class="calc-step-formula">
-            fPH = ${res.fPH.toFixed(4)} (Déviation du pH optimal ${res.p.ph_opt}) <br>
-            fAW = exp(aw_k * (aw - aw_ref)) = exp(${res.p.aw_k} * (${aw} - ${res.p.aw_ref})) = ${res.fAW.toFixed(4)}
-          </div>
-          <span class="calc-step-source">Source d'adaptation microbiologique : ComBase Growth Database / Modèles de Rosso</span>
-        </div>
-      </div>
-
-      <div class="calc-step-row">
-        <span class="calc-step-num">Étape E</span>
-        <div class="calc-step-content">
-          <span class="calc-step-title">Résolution du Facteur Global d'Accélération Cinétique (AF)</span>
-          <p class="calc-step-desc">
-            Le taux global d'accélération combine multiplicativement les stress biochimiques et le coefficient d'inhibition des conservateurs.
-          </p>
-          <div class="calc-step-formula">
-            AF = fT * fRH * fPH * fAW * [Conservateurs] = ${res.fT.toFixed(3)} * ${res.fRH.toFixed(3)} * ${res.fPH.toFixed(3)} * ${res.fAW.toFixed(3)} ${preserv ? ' * ' + res.p.f_preservatives.toFixed(2) : ''} = ${res.AF.toFixed(4)}
-          </div>
-          <span class="calc-step-source">Source théorique : Formulation d'accélération d'altération cinétique de Labuza</span>
-        </div>
-      </div>
-
-      <div class="calc-step-row">
-        <span class="calc-step-num">Étape F</span>
-        <div class="calc-step-content">
-          <span class="calc-step-title">Calcul Final de la DLC Résiduelle Prédictive</span>
-          <p class="calc-step-desc">
-            La DLC résiduelle projetée applique le facteur d'accélération (AF) à la DLC de référence, déduit les pénalités physiques et soustrait le temps déjà écoulé.
-          </p>
-          <div class="calc-step-formula">
-            DLC_projetée = (DLC_ref / AF) * [Pénalités] - Jours_écoulés <br>
-            = (${res.p.DLC_ref} / ${res.AF.toFixed(3)}) ${isOpen ? ' * ' + res.p.f_open.toFixed(2) : ''} ${coldBreak ? ' * ' + res.p.f_cold_break.toFixed(2) : ''} - ${elapsed.toFixed(2)} = ${res.daysRemaining.toFixed(2)} jours restants
-          </div>
-          <span class="calc-step-source">Source logicielle : Algorithme prédictif ShelfLifeAI - Y. Boumeshoule (ENSA BM)</span>
-        </div>
-      </div>
-    `;
-
-    // --- 4. TRACÉ DU GRAPHIQUE D'ALTÉRATION PRÉDICTIVE ---
-    drawChart(res.DLC_est, elapsed, themeColor);
-
-    // Déclenchement de l'animation d'apparition
-    resultsPanel.classList.remove('hidden');
-    void resultsPanel.offsetWidth; // Force le reflow du DOM pour redémarrer l'animation
-    resultsPanel.classList.add('show');
-
-    // Appliquer un effet de balayage visuel "Laser/Scanline" sur les cartes de résultats
-    document.querySelectorAll('.result-card').forEach(card => {
-      card.classList.add('scanning-scanline');
-      setTimeout(() => {
-        card.classList.remove('scanning-scanline');
-      }, 2000);
+  // Écouteurs Sliders
+  const bindSlider = (id, displayId, suffix) => {
+    const el = document.getElementById(id);
+    const disp = document.getElementById(displayId);
+    el.addEventListener('input', () => {
+      disp.textContent = el.value + suffix;
+      runCalculation();
     });
+  };
+  bindSlider('humidite', 'rh-val-display', ' %');
+  bindSlider('ph', 'ph-val-display', '');
+  bindSlider('aw', 'aw-val-display', '');
 
-    // Scroll fluide vers les résultats
-    setTimeout(() => { 
-      resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' }); 
-    }, 250);
-  }
-
-  // ============================================================
-  // 7. FONCTION DE DESSIN DU GRAPHIQUE D'ALTÉRATION
-  // ============================================================
-  function drawChart(dlcEst, elapsed, chartColor) {
-    const ctx = document.getElementById('freshnessChart').getContext('2d');
-    if (chartInstance) {
-      chartInstance.destroy();
-    }
-
-    const maxDays = Math.ceil(dlcEst * 1.15); 
-    const labels = []; 
-    const data = [];
-
-    // Division intelligente de l'axe X pour le tracé de la courbe
-    const steps = maxDays > 45 ? Math.ceil(maxDays / 45) : 1;
-    for (let i = 0; i <= maxDays; i += steps) {
-      labels.push(i);
-      data.push(Math.max(-20, 100 * (1 - (i / dlcEst))));
-    }
-
-    chartInstance = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: [{
-          data: data, 
-          borderColor: chartColor, 
-          backgroundColor: chartColor.replace(')', ', 0.08)').replace('rgb', 'rgba'),
-          borderWidth: 2.5, 
-          fill: true, 
-          tension: 0.35, 
-          pointRadius: 0
-        }]
-      },
-      options: {
-        responsive: true, 
-        maintainAspectRatio: false,
-        plugins: { 
-          legend: { display: false }, 
-          tooltip: { enabled: false },
-          annotation: {
-            annotations: {
-              lineElapsed: {
-                type: 'line',
-                xMin: elapsed,
-                xMax: elapsed,
-                borderColor: '#14241F',
-                borderWidth: 1.5,
-                borderDash: [5, 5],
-                label: {
-                  display: true,
-                  content: `Aujourd'hui (${elapsed.toFixed(1)} jrs)`,
-                  position: 'start',
-                  backgroundColor: 'rgba(20, 36, 31, 0.85)',
-                  color: '#fff',
-                  font: { family: 'IBM Plex Mono', size: 9, weight: 'normal' },
-                  padding: 4
-                }
-              },
-              lineLimit: {
-                type: 'line',
-                xMin: dlcEst,
-                xMax: dlcEst,
-                borderColor: 'rgba(155, 44, 44, 0.7)',
-                borderWidth: 1.5,
-                borderDash: [3, 3],
-                label: {
-                  display: true,
-                  content: 'DLC théorique projetée',
-                  position: 'end',
-                  backgroundColor: 'rgba(155, 44, 44, 0.85)',
-                  color: '#fff',
-                  font: { family: 'IBM Plex Mono', size: 9, weight: 'normal' },
-                  padding: 4
-                }
-              }
-            }
-          }
-        },
-        scales: {
-          x: { 
-            grid: { color: 'rgba(20, 36, 31, 0.04)' },
-            title: {
-              display: true,
-              text: 'Temps (jours de conservation)',
-              font: { family: 'Space Grotesk', size: 10, weight: 600 },
-              color: '#5C6B66'
-            },
-            ticks: {
-              font: { family: 'IBM Plex Mono', size: 10 }
-            }
-          },
-          y: { 
-            min: -20, 
-            max: 100,
-            grid: { color: 'rgba(20, 36, 31, 0.04)' },
-            title: {
-              display: true,
-              text: 'Niveau de fraîcheur résiduel (%)',
-              font: { family: 'Space Grotesk', size: 10, weight: 600 },
-              color: '#5C6B66'
-            },
-            ticks: {
-              font: { family: 'IBM Plex Mono', size: 10 }
-            }
-          }
-        }
-      }
+  // Écouteurs Cartes (Emballage)
+  document.querySelectorAll('#emballage-selector .select-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('#emballage-selector .select-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      document.getElementById('emballage').value = card.dataset.val;
+      runCalculation();
     });
-  }
+  });
 
-  // Animation fluide d'incrémentation du résultat principal
-  function animateResultValue(obj, targetVal, isExpired, duration) {
-    let startTimestamp = null;
-    const isHours = targetVal.includes("HEURES");
-    const targetNum = isExpired ? 0 : parseFloat(targetVal);
-    const suffix = isExpired ? "" : (isHours ? " HEURES" : " JOURS");
-    
-    const step = (timestamp) => {
-      if (!startTimestamp) startTimestamp = timestamp;
-      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-      const val = progress * targetNum;
-      
-      if (isExpired) {
-        obj.textContent = "PÉRIMÉ";
-      } else {
-        obj.textContent = `${val.toFixed(0)}${suffix}`;
-      }
-      
-      if (progress < 1) {
-        window.requestAnimationFrame(step);
-      } else {
-        obj.textContent = targetVal;
-      }
-    };
-    window.requestAnimationFrame(step);
-  }
+  // Écouteurs Boutons
+  const bindButtons = (selectorId, hiddenId) => {
+    document.querySelectorAll(`#${selectorId} .select-btn`).forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll(`#${selectorId} .select-btn`).forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(hiddenId).value = btn.dataset.val;
+        runCalculation();
+      });
+    });
+  };
+  bindButtons('lumiere-selector', 'lumiere');
+  bindButtons('conservateur-selector', 'conservateur_select');
+
+  // Écouteurs Checkboxes
+  ['produit_ouvert', 'rupture_froid'].forEach(id => {
+    document.getElementById(id).addEventListener('change', runCalculation);
+  });
+
+  // Tiroir Réglages
+  const advBtn = document.getElementById('adv-toggle-btn');
+  const advSettings = document.getElementById('advanced-settings');
+  advBtn.addEventListener('click', () => {
+    advBtn.classList.toggle('open');
+    advSettings.classList.toggle('hidden');
+  });
+
+  // Modal Méthodologie
+  document.getElementById('open-meth-btn').addEventListener('click', () => {
+    document.getElementById('meth-modal').classList.remove('hidden');
+  });
+  document.getElementById('close-meth-btn').addEventListener('click', () => {
+    document.getElementById('meth-modal').classList.add('hidden');
+  });
 
 });
+
+// ============================================================
+// 4. ANIMATION DES ICÔNES D'ARRIÈRE-PLAN
+// ============================================================
+function generateBackgroundIcons(key) {
+  const container = document.getElementById('bg-icons-container');
+  container.innerHTML = ''; // Nettoyage
+  const iconSVG = PRODUCT_ICONS[key];
+  
+  // Créer 15 icônes flottantes
+  for(let i = 0; i < 15; i++) {
+    const iconDiv = document.createElement('div');
+    iconDiv.className = 'bg-icon-float';
+    iconDiv.innerHTML = iconSVG;
+    
+    const top = Math.random() * 100;
+    const left = Math.random() * 100;
+    const size = Math.random() * 40 + 30; // 30px à 70px
+    const duration = Math.random() * 20 + 15; // 15s à 35s
+    const delay = Math.random() * 5;
+    
+    iconDiv.style.top = `${top}vh`;
+    iconDiv.style.left = `${left}vw`;
+    iconDiv.style.width = `${size}px`;
+    iconDiv.style.height = `${size}px`;
+    iconDiv.style.animationDuration = `${duration}s`;
+    iconDiv.style.animationDelay = `${delay}s`;
+    
+    container.appendChild(iconDiv);
+  }
+}
+
+// ============================================================
+// 5. MOTEUR BILINGUE
+// ============================================================
+function initLangToggle() {
+  const btn = document.getElementById('lang-btn');
+  const menu = document.getElementById('lang-menu');
+  const icon = document.getElementById('current-lang-icon');
+  const text = document.getElementById('current-lang-text');
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    menu.classList.toggle('hidden');
+  });
+
+  document.addEventListener('click', () => {
+    menu.classList.add('hidden');
+  });
+
+  document.querySelectorAll('.lang-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      currentLang = opt.dataset.lang;
+      
+      if (currentLang === 'fr') { icon.textContent = '🇫🇷'; text.textContent = 'Français'; }
+      else if (currentLang === 'ar') { icon.textContent = '🇸🇦'; text.textContent = 'العربية'; }
+      else if (currentLang === 'ma') { icon.textContent = '🇲🇦'; text.textContent = 'الدارجة'; }
+
+      document.getElementById('html-root').setAttribute('dir', currentLang === 'fr' ? 'ltr' : 'rtl');
+      
+      const dict = i18n[currentLang];
+      document.getElementById('t-first-name').textContent = dict.firstName;
+      document.getElementById('t-last-name').textContent = dict.lastName;
+      if(document.getElementById('t-res-sig')) document.getElementById('t-res-sig').textContent = dict.sig;
+      document.getElementById('t-chart-explanation').textContent = dict.chartExplanation;
+      document.getElementById('t-header-badge').textContent = dict.badge;
+    document.getElementById('t-academic-role').textContent = dict.role;
+    document.getElementById('t-academic-school').textContent = dict.school;
+    document.getElementById('t-step1-title').textContent = dict.step1;
+    document.getElementById('t-step2-title').textContent = dict.step2;
+    document.getElementById('t-basic-params').textContent = dict.basicParams;
+    document.getElementById('t-temp-label').textContent = dict.temp;
+    document.getElementById('t-pack-label').textContent = dict.pack;
+    document.getElementById('t-pack-open').textContent = dict.packOpen;
+    document.getElementById('t-pack-vac').textContent = dict.packVac;
+    document.getElementById('t-pack-map').textContent = dict.packMap;
+    document.getElementById('t-preserv-label').textContent = dict.preserv;
+    document.getElementById('t-preserv-yes').textContent = dict.yes;
+    document.getElementById('t-preserv-no').textContent = dict.no;
+    document.getElementById('t-preserv-dk').textContent = dict.dk;
+    document.getElementById('t-phys-penalties').textContent = dict.penalties;
+    document.getElementById('t-cb-open').textContent = dict.cbOpen;
+    document.getElementById('t-cb-cold').textContent = dict.cbCold;
+    document.getElementById('t-adv-toggle').childNodes[0].textContent = dict.advToggle;
+    document.getElementById('t-rh-label').textContent = dict.rh;
+    document.getElementById('t-rh-hint').textContent = dict.rhHint;
+    document.getElementById('t-ph-label').textContent = dict.phLabel;
+    document.getElementById('t-aw-label').textContent = dict.awLabel;
+    document.getElementById('t-aw-hint').textContent = dict.awHint;
+    document.getElementById('t-light-label').textContent = dict.light;
+    document.getElementById('t-light-low').textContent = dict.lightLow;
+    document.getElementById('t-light-high').textContent = dict.lightHigh;
+    
+    document.getElementById('t-res-sig').textContent = dict.sig;
+    document.getElementById('t-res-status-tag').textContent = dict.statusTag;
+    document.getElementById('t-hero-label').textContent = dict.heroLabel;
+    document.getElementById('res-status-visual-text').textContent = dict.statusGauge;
+    document.getElementById('t-factors-title').textContent = dict.factorsTitle;
+    document.getElementById('t-math-title').textContent = dict.mathTitle;
+    document.getElementById('t-math-intro').textContent = dict.mathIntro;
+    document.getElementById('t-chart-title').textContent = dict.chartTitle;
+    document.getElementById('t-warning-banner').textContent = dict.warning;
+    document.getElementById('t-meth-btn').textContent = dict.methBtn;
+    document.getElementById('t-meth-modal-title').textContent = dict.methTitle;
+
+    document.getElementById('t-feedback-title').textContent = dict.feedbackTitle;
+    document.getElementById('t-feedback-desc').textContent = dict.feedbackDesc;
+    document.getElementById('t-feedback-placeholder').placeholder = dict.feedbackPlaceholder;
+    document.getElementById('t-feedback-btn-text').textContent = dict.feedbackBtn;
+
+    document.querySelectorAll('.product-card').forEach(card => {
+      const key = card.dataset.key;
+      if (key && PRODUCT_DB[key]) {
+        card.querySelector('.card-name').textContent = PRODUCT_DB[key].name[currentLang];
+      }
+    });
+
+    runCalculation();
+    });
+  });
+}
+
+// ============================================================
+// 6. MODÉLISATION MATHÉMATIQUE (ARRHENIUS)
+// ============================================================
+function calcShelfLife(key, T, RH, pH, aw, emballage, lumiere, preserv, isOpen, coldBreak) {
+  const p = PRODUCT_DB[key];
+  
+  // 1. Facteur d'Arrhenius (Thermique)
+  const T_ref_K = p.T_ref + 273.15;
+  const T_new_K = T + 273.15;
+  const fT = Math.exp( (p.Ea / R) * (1/T_ref_K - 1/T_new_K) );
+  
+  // 2. Facteur d'Humidité relative
+  let fRH = 1.0;
+  if (emballage === 'non_emballe' || isOpen) {
+    // Fort impact de l'humidité si le produit est exposé
+    fRH = Math.max(0.2, Math.min(5.0, Math.pow(Math.max(5, RH) / Math.max(1, p.RH_ref), p.rh_sensitivity)));
+  }
+  
+  // 3. Facteur pH
+  const dPH = Math.abs(pH - p.ph_opt);
+  // Un pH éloigné ralentit la croissance, donc fPH < 1 (allonge la durée de vie)
+  const fPH_val = Math.max(0.1, 1 / (1 + p.ph_k * dPH));
+  
+  // 4. Facteur aw
+  const dAW = aw - p.aw_ref;
+  const fAW = Math.max(0.05, Math.min(10.0, Math.exp(p.aw_k * dAW)));
+
+  // 5. Emballage
+  let f_emb = 1.0;
+  if (emballage === 'sous_vide' && !isOpen) f_emb = 2.5;
+  else if (emballage === 'map' && !isOpen) f_emb = 3.5;
+
+  // 6. Lumière
+  let f_lum = 1.0;
+  if (lumiere === 'forte') f_lum = 1.15; 
+
+  // 7. Conservateurs
+  let f_pres = 1.0;
+  if (preserv === 'oui') f_pres = p.f_preservatives;
+
+  // Taux d'accélération brut (AF)
+  let AF = fT * fRH * fPH_val * fAW * f_lum * f_pres;
+  
+  // Durée de vie projetée
+  let DLC_est = (p.DLC_ref * f_emb) / AF;
+  
+  // Pénalités
+  if (isOpen) DLC_est *= p.f_open;
+  if (coldBreak) DLC_est *= p.f_cold_break;
+
+  // Limites
+  DLC_est = Math.max(0.1, Math.min(p.DLC_ref * 25, DLC_est));
+  
+  return { p, fT, fRH, fPH: fPH_val, fAW, f_emb, f_lum, f_pres, AF, DLC_est };
+}
+
+// ============================================================
+// 7. RENDU ET MISE À JOUR VISUELLE
+// ============================================================
+function runCalculation() {
+  const key = document.getElementById('produit').value;
+  if (!key) return; // Aucun produit sélectionné
+
+  const panel = document.getElementById('results-panel');
+  panel.classList.remove('hidden');
+
+  const T = parseFloat(document.getElementById('temperature').value);
+  const RH = parseFloat(document.getElementById('humidite').value);
+  const pH = parseFloat(document.getElementById('ph').value);
+  const aw = parseFloat(document.getElementById('aw').value);
+  
+  const emballage = document.getElementById('emballage').value;
+  const lumiere = document.getElementById('lumiere').value;
+  const preserv_val = document.getElementById('conservateur_select').value;
+  
+  const isOpen = document.getElementById('produit_ouvert').checked;
+  const coldBreak = document.getElementById('rupture_froid').checked;
+
+  const res = calcShelfLife(key, T, RH, pH, aw, emballage, lumiere, preserv_val, isOpen, coldBreak);
+
+  document.getElementById('res-product-title').textContent = res.p.name[currentLang];
+
+  // Calcul Fourchette (± 15%)
+  const minDays = Math.max(0, res.DLC_est * 0.85);
+  const maxDays = res.DLC_est * 1.15;
+  
+  const rangeEl = document.getElementById('res-range');
+
+  const formatTime = (decimalDays, lang) => {
+    const fullDays = Math.floor(decimalDays);
+    const remainingHours = Math.round((decimalDays - fullDays) * 24);
+    let d = fullDays;
+    let h = remainingHours;
+    if (h === 24) { d += 1; h = 0; }
+
+    if (lang === 'fr') {
+      let parts = [];
+      if (d > 0) parts.push(`${d} jour${d > 1 ? 's' : ''}`);
+      if (h > 0) parts.push(`${h} heure${h > 1 ? 's' : ''}`);
+      return parts.join(' et ');
+    } else if (lang === 'ar') {
+      let dPart = '';
+      if (d === 1) dPart = 'يوم واحد';
+      else if (d === 2) dPart = 'يومان';
+      else if (d >= 3 && d <= 10) dPart = `${d} أيام`;
+      else if (d > 10) dPart = `${d} يوماً`;
+
+      let hPart = '';
+      if (h === 1) hPart = 'ساعة واحدة';
+      else if (h === 2) hPart = 'ساعتان';
+      else if (h >= 3 && h <= 10) hPart = `${h} ساعات`;
+      else if (h > 10) hPart = `${h} ساعة`;
+
+      if (d === 0) return hPart || 'منتهي';
+      if (h === 0) return dPart;
+      return `${dPart} و ${hPart}`;
+    } else if (lang === 'ma') {
+      let dPart = '';
+      if (d === 1) dPart = 'نهار واحد';
+      else if (d === 2) dPart = 'يومين';
+      else if (d >= 3 && d <= 10) dPart = `${d} يام`;
+      else if (d > 10) dPart = `${d} يوم`;
+
+      let hPart = '';
+      if (h === 1) hPart = 'ساعة';
+      else if (h === 2) hPart = 'ساعتين';
+      else if (h >= 3 && h <= 10) hPart = `${h} سوايع`;
+      else if (h > 10) hPart = `${h} ساعة`;
+
+      if (d === 0) return hPart || 'خاسر';
+      if (h === 0) return dPart;
+      return `${dPart} و ${hPart}`;
+    }
+  };
+
+  if (res.DLC_est < 0.04) { // Moins d'une heure
+    rangeEl.textContent = i18n[currentLang].expired;
+  } else {
+    const minStr = formatTime(minDays, currentLang);
+    const maxStr = formatTime(maxDays, currentLang);
+    
+    if (minStr === maxStr) {
+      rangeEl.innerHTML = minStr;
+    } else {
+      const fromLbl = currentLang === 'fr' ? 'De' : 'من';
+      const toLbl = currentLang === 'fr' ? 'à' : 'إلى';
+      rangeEl.innerHTML = `<span style="font-size: 0.6em; opacity: 0.8; font-family: var(--font-body);">${fromLbl}</span> ${minStr} <br><span style="font-size: 0.6em; opacity: 0.8; font-family: var(--font-body);">${toLbl}</span> ${maxStr}`;
+    }
+  }
+  
+  // Animation subtile du texte pour prouver la mise à jour
+  rangeEl.style.transform = 'scale(1.05)';
+  setTimeout(() => rangeEl.style.transform = 'scale(1)', 200);
+
+  // Jauge Fraîcheur
+  const rawIndex = Math.max(0, Math.min(100, (1 / res.AF) * 100 * (res.f_emb)));
+  const progressCircle = document.getElementById('progress-ring-circle');
+  const pctText = document.getElementById('res-status-pct');
+  
+  pctText.textContent = rawIndex.toFixed(0) + '%';
+  
+  const radius = progressCircle.r.baseVal.value;
+  const circumference = radius * 2 * Math.PI;
+  progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+  progressCircle.style.strokeDashoffset = circumference - (rawIndex / 100) * circumference;
+
+  renderFactors(res, key, T, RH, pH, aw, emballage, lumiere, preserv_val, isOpen, coldBreak);
+  renderMath(res, T, RH, pH, aw);
+  drawChart(minDays, maxDays);
+}
+
+function renderFactors(res, key, T, RH, pH, aw, emballage, lumiere, preserv_val, isOpen, coldBreak) {
+  let html = ``;
+  const t = (f, a, m) => currentLang === 'fr' ? f : (currentLang === 'ma' ? (m || a) : a);
+  const addFactor = (title, why, sourceUrl = null, sourceText = null) => { 
+    let sourceHtml = sourceUrl ? `<br><a href="${sourceUrl}" target="_blank" class="factor-source-link">${sourceText}</a>` : '';
+    html += `<div class="factor-item"><span class="factor-title">${title}</span><p class="factor-explanation">${why}${sourceHtml}</p></div>`; 
+  };
+
+  addFactor(
+    t(`Température : ${T}°C`, `درجة الحرارة : ${T}°C`, `الحرارة : ${T}°C`), 
+    t(
+      `L'équation d'Arrhenius modélise l'énergie des molécules. À ${T}°C, l'évolution est ${res.fT > 1 ? 'accélérée' : 'ralentie'}.`, 
+      `عند ${T} درجة، يكون التلف ${res.fT > 1 ? 'سريعا' : 'بطيئا'}.`,
+      `فدرجة ${T}، التلف كيكون ${res.fT > 1 ? 'سريع' : 'بطيء'}.`
+    ),
+    res.p.sourceEa,
+    t(`Source (Ea = ${res.p.Ea} kJ/mol)`, `المصدر العلمي`, `المصدر العلمي`)
+  );
+  
+  if (emballage === 'non_emballe' || isOpen) {
+    addFactor(
+      t(`Humidité Ambiante : ${RH}%`, `الرطوبة المحيطة : ${RH}%`, `الرطوبة دالجو : ${RH}%`), 
+      t(`Le produit n'étant pas scellé, l'humidité ambiante modifie le taux de dégradation d'un facteur de ×${res.fRH.toFixed(2)}.`, 
+        `بما أن المنتج غير مغلق، فالرطوبة تؤثر بعامل ×${res.fRH.toFixed(2)}.`,
+        `حيت المنتوج محلول، الرطوبة كتأثر ب ×${res.fRH.toFixed(2)}.`
+      )
+    );
+  }
+  
+  addFactor(
+    t(`Activité de l'eau : ${aw}`, `النشاط المائي : ${aw}`, `كمية الما (aw) : ${aw}`), 
+    t(`Une aw de ${aw} influence la disponibilité en eau. Modificateur: ×${res.fAW.toFixed(2)}.`, 
+      `نشاط مائي ب ${aw} يؤثر على توفر الماء. معامل: ×${res.fAW.toFixed(2)}`,
+      `نسبة الما ${aw} كتخلي البكتيريا تكبر. التأثير: ×${res.fAW.toFixed(2)}`
+    ),
+    "https://www.fda.gov/inspections-compliance-enforcement-and-criminal-investigations/inspection-technical-guides/water-activity-aw-foods",
+    t(`Source FDA (aw)`, `مصدر FDA`, `مصدر من FDA`)
+  );
+  
+  addFactor(
+    t(`Potentiel Hydrogène : pH ${pH}`, `الرقم الهيدروجيني : pH ${pH}`, `الحموضة : pH ${pH}`), 
+    t(`L'écart avec l'optimum (${res.p.ph_opt}) stresse la matrice. Modificateur: ×${res.fPH.toFixed(2)}.`, 
+      `الرقم الهيدروجيني يؤثر بمعامل: ×${res.fPH.toFixed(2)}`,
+      `الحموضة كتأثر ب : ×${res.fPH.toFixed(2)}`
+    ),
+    "https://www.fda.gov/food/guidance-documents-regulatory-information-topic-food-and-dietary-supplements/acidified-low-acid-canned-foods-guidance-documents-regulatory-information",
+    t(`Source FDA (pH)`, `مصدر FDA`, `مصدر من FDA`)
+  );
+
+  if (emballage !== 'non_emballe' && !isOpen) {
+    addFactor(
+      t(`Emballage protecteur`, `تغليف واقي`, `التغليف`), 
+      t(`L'absence d'oxygène retarde l'altération (Facteur ×${res.f_emb}).`, 
+        `غياب الأكسجين يؤخر التلف (عامل ×${res.f_emb}).`,
+        `ماكاينش الأكسجين، هادشي كيعطل الخسورية (×${res.f_emb}).`
+      ),
+      "https://pmc.ncbi.nlm.nih.gov/articles/PMC92181/",
+      t(`Source Sivertsvik et al.`, `المصدر`, `المصدر العلمي`)
+    );
+  }
+
+  if (preserv_val === 'ne_sais_pas') {
+    addFactor(
+      t(`Conservateurs : Précaution`, `مواد حافظة : مبدأ الحيطة`, `مواد حافظة : احتياط`), 
+      t(`En cas d'incertitude, le modèle applique le scénario critique (Facteur ×1.0).`, 
+        `في حالة عدم اليقين، يطبق النموذج السيناريو الحرج.`,
+        `حيت ماعرفناش واش كاينين مواد حافظة، الموديل كيحسب على أساس ماكاينينش.`
+      )
+    );
+  } else if (preserv_val === 'oui') {
+    addFactor(
+      t(`Conservateurs : Actifs`, `مواد حافظة : نشطة`, `مواد حافظة : كاينين`), 
+      t(`Inhibe les fonctions cellulaires (Facteur ×${res.f_pres}).`, 
+        `يمنع وظائف الخلية (عامل ×${res.f_pres}).`,
+        `كتعطل البكتيريا باش ماتكبرش (×${res.f_pres}).`
+      )
+    );
+  }
+  document.getElementById('factors-list').innerHTML = html;
+}
+
+function renderMath(res, T, RH, pH, aw) {
+  const t = (f, a, m) => currentLang === 'fr' ? f : (currentLang === 'ma' ? (m || a) : a);
+  const T_ref_K = (res.p.T_ref + 273.15).toFixed(2);
+  const T_new_K = (T + 273.15).toFixed(2);
+
+  document.getElementById('calc-steps').innerHTML = `
+    <div class="calc-step-row">
+      <span class="calc-step-num">01</span>
+      <div class="calc-step-content">
+        <span class="calc-step-title">${t('Thermodynamique (Arrhenius)', 'الديناميكا الحرارية (أرينيوس)', 'الديناميكا الحرارية (أرينيوس)')}</span>
+        <div class="calc-step-formula" dir="ltr">
+          <i>k<sub>new</sub> / k<sub>ref</sub></i> = <i>e</i><sup> (E<sub>a</sub> / R) × (1/T<sub>ref</sub> - 1/T<sub>new</sub>) </sup><br><br>
+          = <i>e</i><sup> (${res.p.Ea} / 0.008314) × (1/${T_ref_K} - 1/${T_new_K}) </sup><br><br>
+          = <b>${res.fT.toFixed(3)}</b>
+        </div>
+        <div class="math-params-explanation">
+          <ul>
+            <li><b>E<sub>a</sub> (${res.p.Ea} kJ/mol)</b> : ${t("Énergie d'activation (Sensibilité thermique du produit).", "طاقة التنشيط (الحساسية الحرارية الخاصة بالمنتج).", "طاقة التنشيط (شحال المنتوج حساس للحرارة).")} <a href="${res.p.sourceEa}" target="_blank" class="factor-source-link">${t("Lien Source", "رابط المصدر", "رابط المصدر")}</a></li>
+            <li><b>R (0.008314)</b> : ${t("Constante universelle des gaz parfaits.", "ثابت الغازات العام (ثابت فيزيائي).", "ثابت الغازات العام (ثابت فيزيائي).")}</li>
+            <li><b>T<sub>ref</sub> / T<sub>new</sub></b> : ${t("Température de référence vs Température actuelle (en Kelvin).", "درجة الحرارة المرجعية وحرارة التخزين (بالكلفن).", "الحرارة المرجعية مقارنة مع حرارة التخزين دابا (بالكلفن).")}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="calc-step-row">
+      <span class="calc-step-num">02</span>
+      <div class="calc-step-content">
+        <span class="calc-step-title">${t('Multifacteurs Physico-Chimiques', 'عوامل فيزيائية وكيميائية متعددة', 'عوامل فيزيائية وكيميائية')}</span>
+        <div class="calc-step-formula">
+          f_aw = exp[k * (aw_new - aw_ref)] = ${res.fAW.toFixed(3)}<br>
+          f_pH = ${res.fPH.toFixed(3)}<br>
+          f_RH = ${res.fRH.toFixed(3)}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function drawChart(minDays, maxDays) {
+  const ctx = document.getElementById('freshnessChart').getContext('2d');
+  if (chartInstance) chartInstance.destroy();
+
+  const labels = [0, (minDays/2).toFixed(1), minDays.toFixed(1), maxDays.toFixed(1)];
+  const data = [100, 50, 5, 0];
+  const color = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
+
+  chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: data, 
+        borderColor: color, 
+        backgroundColor: color.replace(')', ', 0.1)').replace('rgb', 'rgba'),
+        borderWidth: 3, fill: true, tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      animation: { duration: 400 },
+      scales: {
+        x: { 
+          title: { display: true, text: currentLang === 'fr' ? 'Jours de conservation' : (currentLang === 'ma' ? 'يام دالحفظ' : 'أيام الحفظ'), color: '#9CA3AF' },
+          grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9CA3AF' } 
+        },
+        y: { 
+          min: 0, max: 100, 
+          title: { display: true, text: currentLang === 'fr' ? 'Indice Fraîcheur (%)' : (currentLang === 'ma' ? 'مؤشر النضارة (%)' : 'مؤشر النضارة (%)'), color: '#9CA3AF' },
+          grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9CA3AF' }
+        }
+      }
+    }
+  });
+}
